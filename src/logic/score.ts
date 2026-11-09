@@ -331,7 +331,10 @@ function stableReasons(s: Stock): Reason[] {
     r.push({
       tone: 'good',
       title: '시장이 흔들려도 덜 흔들림',
-      easy: `시장 전체가 10% 움직일 때 이 종목은 약 ${(m.beta * 10).toFixed(0)}% 정도만 움직였어요.`,
+      easy:
+        m.beta < 0.3
+          ? '최근 1년 동안 시장 전체가 오르내릴 때도 거의 따로 움직였어요. 시장이 급락할 때 함께 크게 빠질 위험이 적은 편이에요.'
+          : `시장 전체가 10% 움직일 때 이 종목은 약 ${(m.beta * 10).toFixed(0)}% 정도만 움직였어요.`,
       detail: `베타 ${m.beta.toFixed(2)}.`,
       term: 'beta',
       weight: (1 - m.beta) * 4 + 1,

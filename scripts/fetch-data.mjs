@@ -284,9 +284,12 @@ async function collect(list, market) {
       if (market === 'KR') {
         try {
           const n = await fetchNaver(s.code);
-          for (const k of ['per', 'pbr', 'divYield', 'fwdPer']) {
+          // 한국 종목 배당수익률은 네이버 값을 우선 사용 (Yahoo 값이 특별배당 등으로 튀는 경우가 있음)
+          if (n.divYield != null) f.divYield = n.divYield;
+          for (const k of ['per', 'pbr', 'fwdPer']) {
             if (f[k] == null && n[k] != null) f[k] = n[k];
           }
+          if (s === list[0]) console.log(`[${s.code}] 네이버 값:`, JSON.stringify(n));
         } catch (e) {
           console.warn(`[${s.code}] 네이버 보충 실패: ${e.message}`);
         }
@@ -303,7 +306,7 @@ async function collect(list, market) {
         spark,
         metrics: roundAll({ ...rest, ...f }),
       });
-      console.log(`[${s.code}] ${s.name} OK (PER ${f.per ?? '-'}, 배당 ${f.divYield ?? '-'})`);
+      console.log(`[${s.code}] ${s.name} OK (PER ${f.per ?? '-'}, 배당 ${f.divYield ?? '-'}, 베타 ${beta?.toFixed(2) ?? '-'})`);
     } catch (e) {
       console.warn(`[${s.code}] ${s.name} 건너뜀: ${e.message}`);
     }

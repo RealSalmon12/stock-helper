@@ -24,3 +24,7 @@ npm run ios      # iOS (Expo Go, 또는 macOS)
 1. 실제 시세 데이터 연결 (한국: KRX/공공데이터, 미국: Yahoo Finance 계열)
 2. 추천 로직과 쉬운 말 설명
 3. 초보/고수 모드
+
+## 안드로이드 APK
+
+`main`에 코드가 올라가면 GitHub Actions가 APK를 자동으로 빌드해서 [apk-latest 릴리스](https://github.com/RealSalmon12/stock-helper/releases/tag/apk-latest)에 올립니다. 폰에서 APK 파일을 받아 설치하면 됩니다 ("출처를 알 수 없는 앱 설치" 허용 필요).

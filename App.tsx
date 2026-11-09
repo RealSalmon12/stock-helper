@@ -1,41 +1,85 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Disclaimer } from './src/components/Disclaimer';
-import { MarketTabs } from './src/components/MarketTabs';
-import { Market } from './src/data/types';
+import { Header } from './src/components/Header';
+import { TermProvider } from './src/components/Terms';
+import { Market, Mode } from './src/data/types';
+import { useMarketData } from './src/data/useMarketData';
 import { MarketScreen } from './src/screens/MarketScreen';
-import { colors } from './src/theme';
+import { colors, radius } from './src/theme';
 
 export default function App() {
   const [market, setMarket] = useState<Market>('KR');
+  const [mode, setMode] = useState<Mode>('beginner');
+  const [showGuide, setShowGuide] = useState(true);
+  const { data, state, refresh } = useMarketData();
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={styles.safe}>
-        <StatusBar style="dark" />
-        <ScrollView contentContainerStyle={styles.content}>
-          <View style={styles.inner}>
-            <Text style={styles.appTitle}>주식 도우미</Text>
-            <Text style={styles.appSub}>초보부터 고수까지, 쉬운 말로 보는 종목 추천</Text>
-            <Disclaimer />
-            <View style={{ height: 16 }} />
-            <MarketTabs value={market} onChange={setMarket} />
-            <MarketScreen market={market} />
-            <Text style={styles.note}>현재 보이는 종목은 화면 확인용 예시입니다.</Text>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+      <TermProvider>
+        <SafeAreaView style={styles.safe} edges={['top']}>
+          <StatusBar style="dark" />
+          <ScrollView contentContainerStyle={styles.content}>
+            <View style={styles.inner}>
+              <Header
+                mode={mode}
+                onMode={setMode}
+                market={market}
+                onMarket={setMarket}
+                updatedAt={data.generatedAt}
+                loadState={state}
+                onRefresh={refresh}
+              />
+
+              {mode === 'beginner' && showGuide && (
+                <View style={styles.guide}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.guideTitle}>👋 이렇게 보면 돼요</Text>
+                    <Text style={styles.guideText}>
+                      점수는 0~100점이고, 같은 시장 종목들끼리 비교한 상대 점수예요. 카드를 누르면 왜 이 점수인지 쉬운 말로
+                      설명해 드려요. 파란 <Text style={styles.q}>?</Text> 를 누르면 어려운 용어도 풀어 드려요. 숫자를 더 자세히
+                      보고 싶으면 위에서 <Text style={styles.bold}>고수</Text> 모드로 바꿔 보세요.
+                    </Text>
+                  </View>
+                  <Pressable onPress={() => setShowGuide(false)} hitSlop={10} accessibilityLabel="안내 닫기">
+                    <Text style={styles.guideClose}>✕</Text>
+                  </Pressable>
+                </View>
+              )}
+
+              <Disclaimer compact />
+
+              <MarketScreen market={market} mode={mode} stocks={data.stocks} />
+
+              <Text style={styles.footer}>
+                데이터: {data.sources.join(', ')} · 장 마감 후 하루 2번 자동 갱신{'\n'}
+                실시간 시세가 아니며 지연되거나 틀릴 수 있어요.
+              </Text>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </TermProvider>
     </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, alignItems: 'center' },
-  inner: { width: '100%', maxWidth: 640 },
-  appTitle: { fontSize: 26, fontWeight: '800', color: colors.text },
-  appSub: { fontSize: 14, color: colors.sub, marginTop: 4 },
-  note: { fontSize: 12, color: colors.sub, textAlign: 'center', marginVertical: 20 },
+  content: { padding: 16, alignItems: 'center', paddingBottom: 40 },
+  inner: { width: '100%', maxWidth: 640, gap: 14 },
+  guide: {
+    flexDirection: 'row',
+    gap: 10,
+    backgroundColor: colors.primarySoft,
+    borderRadius: radius.lg,
+    padding: 14,
+  },
+  guideTitle: { fontSize: 14, fontWeight: '800', color: colors.text },
+  guideText: { fontSize: 13, color: colors.text, lineHeight: 20, marginTop: 4 },
+  q: { color: colors.primary, fontWeight: '800' },
+  bold: { fontWeight: '800' },
+  guideClose: { fontSize: 14, color: colors.sub },
+  footer: { fontSize: 11, color: colors.faint, textAlign: 'center', lineHeight: 17, marginTop: 8 },
 });

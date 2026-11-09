@@ -88,7 +88,11 @@ async function fetchFundamentals(symbol) {
     fwdPer: raw(sd.forwardPE) ?? raw(ks.forwardPE),
     pbr: raw(ks.priceToBook),
     peg: raw(ks.pegRatio) ?? raw(ks.trailingPegRatio),
-    divYield: pct(raw(sd.dividendYield) ?? raw(sd.trailingAnnualDividendYield)),
+    divYield: pickDividend(
+      [pct(raw(sd.dividendYield)), pct(raw(sd.trailingAnnualDividendYield))],
+      pct(raw(sd.payoutRatio)),
+      raw(sd.trailingPE),
+    ),
     payout: pct(raw(sd.payoutRatio)),
     beta: raw(sd.beta) ?? raw(ks.beta),
     marketCap: raw(pr.marketCap) ?? raw(sd.marketCap),
@@ -104,6 +108,18 @@ async function fetchFundamentals(symbol) {
     analystCount: raw(fd.numberOfAnalystOpinions),
     recommendation: fd.recommendationKey ?? null,
   };
+}
+
+// 배당수익률 후보가 여러 개일 때(예상/과거 12개월) 배당성향÷PER로 계산한 값과 가장 가까운 것을 고릅니다.
+// Yahoo가 가끔 특별배당 등으로 비정상적인 값을 주는 경우를 걸러내기 위함입니다.
+function pickDividend(cands, payout, per) {
+  const c = cands.filter((v) => v != null && Number.isFinite(v));
+  if (c.length === 0) return null;
+  if (payout > 0 && per > 0) {
+    const implied = payout / per;
+    return c.reduce((a, b) => (Math.abs(b - implied) < Math.abs(a - implied) ? b : a));
+  }
+  return c[0];
 }
 
 // 네이버 증권 (한국 종목 보충용)
@@ -217,8 +233,41 @@ function roundAll(obj) {
   return out;
 }
 
+// 지수 대비 베타를 1년 일별 수익률로 직접 계산 (Yahoo 베타는 한국 종목에서 부정확한 경우가 많음)
+const dayKey = (t) => new Date(t * 1000).toISOString().slice(0, 10);
+function calcBeta(points, indexPoints) {
+  if (!indexPoints) return null;
+  const idx = new Map(indexPoints.map((p) => [dayKey(p.t), p.adj]));
+  const pairs = [];
+  let prevS = null,
+    prevM = null;
+  for (const p of points.slice(-253)) {
+    const mv = idx.get(dayKey(p.t));
+    if (mv == null) continue;
+    if (prevS != null) pairs.push([p.adj / prevS - 1, mv / prevM - 1]);
+    prevS = p.adj;
+    prevM = mv;
+  }
+  if (pairs.length < 120) return null;
+  const ms = pairs.reduce((a, [x]) => a + x, 0) / pairs.length;
+  const mm = pairs.reduce((a, [, y]) => a + y, 0) / pairs.length;
+  let cov = 0,
+    v = 0;
+  for (const [x, y] of pairs) {
+    cov += (x - ms) * (y - mm);
+    v += (y - mm) ** 2;
+  }
+  return v > 0 ? cov / v : null;
+}
+
 // ---------- 실행 ----------
 async function collect(list, market) {
+  let indexPoints = null;
+  try {
+    indexPoints = (await fetchChart(market === 'KR' ? '^KS11' : '^GSPC')).points;
+  } catch (e) {
+    console.warn(`[${market}] 지수 시세 실패, 베타는 Yahoo 값 사용: ${e.message}`);
+  }
   const out = [];
   for (const s of list) {
     try {
@@ -242,6 +291,8 @@ async function collect(list, market) {
           console.warn(`[${s.code}] 네이버 보충 실패: ${e.message}`);
         }
       }
+      const beta = calcBeta(chart.points, indexPoints);
+      if (beta != null) f.beta = beta;
       const { spark, ...rest } = pm;
       out.push({
         code: s.code,

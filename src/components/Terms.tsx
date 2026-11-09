@@ -38,7 +38,7 @@ export function TermChip({ term, label }: { term: TermKey; label?: string }) {
   const open = useOpenTerm();
   return (
     <Pressable onPress={() => open(term)} style={styles.chip} accessibilityRole="button" hitSlop={6}>
-      <Text style={styles.chipText}>{label ?? GLOSSARY[term].name.split(' ')[0]} ?</Text>
+      <Text style={styles.chipText}>{label ?? `${GLOSSARY[term].name.split(' ')[0]} ?`}</Text>
     </Pressable>
   );
 }

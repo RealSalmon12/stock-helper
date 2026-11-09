@@ -36,7 +36,7 @@ export function MarketMood({ stocks, mode }: { stocks: Stock[]; mode: Mode }) {
             <Text style={styles.stats}>
               후보 {n}개 중 {up}개가 오르는 흐름
             </Text>
-            <TermChip term="ma" label="기준?" />
+            <TermChip term="ma" label="기준 ?" />
           </View>
         )}
         <View style={styles.bar}>

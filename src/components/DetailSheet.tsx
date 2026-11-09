@@ -9,7 +9,7 @@ import { Disclaimer } from './Disclaimer';
 import { ReasonList } from './ReasonList';
 import { ScoreRing } from './ScoreRing';
 import { Sparkline } from './Sparkline';
-import { TermChip } from './Terms';
+import { TermChip, TermProvider } from './Terms';
 
 const JUDGE: Record<Judge, { label: string; fg: string; bg: string } | null> = {
   good: { label: '좋음', fg: colors.good, bg: colors.goodSoft },
@@ -39,6 +39,8 @@ export function DetailSheet({ item, other, mode, onClose }: Props) {
 
   return (
     <Modal visible animationType="slide" onRequestClose={onClose} presentationStyle="pageSheet">
+      {/* 모달 안에서 용어 설명 창이 위에 뜨도록 Provider를 한 번 더 둡니다 */}
+      <TermProvider>
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         <View style={styles.topBar}>
           <Pressable onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="닫기">
@@ -143,6 +145,7 @@ export function DetailSheet({ item, other, mode, onClose }: Props) {
           </View>
         </ScrollView>
       </SafeAreaView>
+      </TermProvider>
     </Modal>
   );
 }

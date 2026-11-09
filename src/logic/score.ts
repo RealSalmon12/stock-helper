@@ -301,12 +301,12 @@ function buyNowReasons(s: Stock): Reason[] {
       weight: 2,
     });
   }
-  if (!m.aboveMa200 && ok(m.ret6m) && m.ret6m < -10) {
+  if (!m.aboveMa200 && ((ok(m.ret6m) && m.ret6m < -10) || !m.aboveMa50)) {
     r.push({
       tone: 'warn',
       title: '아직 하락 추세',
       easy: '장기 평균 가격보다 아래에 있어요. 싸 보여도 더 떨어질 수 있으니 반등을 확인하고 들어가는 게 안전해요.',
-      detail: `200일선 하회, 6개월 ${fmtPct(m.ret6m)}.`,
+      detail: `200일선 하회${m.aboveMa50 ? '' : ', 50일선 하회'}, 6개월 ${fmtPct(m.ret6m)}.`,
       term: 'ma',
       weight: 2,
     });
@@ -455,11 +455,19 @@ function pickReasons(all: Reason[]): Reason[] {
 function makeSummary(kind: RecommendationKind, score: number, reasons: Reason[]): string {
   const goods = reasons.filter((r) => r.tone === 'good').map((r) => r.title);
   const warn = reasons.find((r) => r.tone === 'warn');
+  const q = (t: string) => `‘${t}’`;
   const head =
-    goods.length >= 2 ? `${goods[0]}, ${goods[1]}` : goods.length === 1 ? goods[0] : kind === 'buyNow' ? '전체 지표가 고르게 무난함' : '여러 지표가 고르게 무난함';
-  const tail = warn ? ` 다만 ${warn.title.replace(/[.]$/, '')} 점은 주의하세요.` : '';
-  const verdict = score >= 75 ? '눈여겨볼 만해요.' : score >= 60 ? '관심 가져볼 만해요.' : '무난한 편이에요.';
-  return `${head} 점이 장점이라 ${verdict}${tail}`;
+    goods.length > 0
+      ? `장점은 ${goods.slice(0, 2).map(q).join(', ')}이에요.`
+      : '눈에 띄는 장점은 없지만 여러 지표가 고르게 무난해요.';
+  const verdict =
+    score >= 75
+      ? `${kind === 'buyNow' ? '지금' : '오래 들고 가기에'} 눈여겨볼 만해요.`
+      : score >= 60
+        ? '관심 가져볼 만해요.'
+        : '다른 후보와 비교해 보세요.';
+  const tail = warn ? ` 다만 ${q(warn.title)}은 조심하세요.` : '';
+  return `${head} 종합하면 ${verdict}${tail}`;
 }
 
 export function scoreMarket(stocks: Stock[], kind: RecommendationKind): Scored[] {

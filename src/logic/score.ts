@@ -9,6 +9,7 @@ import { fmtPct, fmtPrice } from './format';
  *
  * 지금 사기 좋은 종목 = 오르는 힘(모멘텀) 40% + 가격 매력(저평가) 35% + 성장·수익성 25%
  * 안정적인 종목     = 낮은 흔들림 35% + 하락 방어 20% + 배당 20% + 재무 건전성 25%
+ * 학생에게 좋은 종목 = 덜 흔들림 30% + 소액으로 시작 20% + 잘 알려진 큰 회사 20% + 꾸준한 이익 20% + 배당 10%
  */
 
 type Getter = (m: StockMetrics) => number | null | undefined;
@@ -79,6 +80,7 @@ const G = {
   debt: (m: StockMetrics) => m.debtToEquity,
   margin: (m: StockMetrics) => m.profitMargin,
   cap: (m: StockMetrics) => m.marketCap,
+  price: (m: StockMetrics) => m.price,
 };
 
 // ---------- 지금 사기 좋은 종목 ----------
@@ -154,6 +156,39 @@ function scoreStable(s: Stock, ctx: Ctx): { score: number; subs: SubScore[]; cov
       { key: 'defense', label: '하락 방어', score: Math.round(defense.value), weight: 0.2 },
       { key: 'dividend', label: '배당', score: Math.round(dividend), weight: 0.2 },
       { key: 'finance', label: '재무 튼튼함', score: Math.round(finScore), weight: 0.25 },
+    ],
+  };
+}
+
+// ---------- 학생에게 좋은 종목 ----------
+// 용돈 수준의 적은 돈으로 시작할 수 있고, 이해하기 쉬운 큰 회사이며, 크게 흔들리지 않는 종목.
+// 미국 주식은 국내 증권사에서 소수점 투자가 되므로 1주 가격 비중을 낮게 봅니다.
+function scoreStudent(s: Stock, ctx: Ctx): { score: number; subs: SubScore[]; coverage: number } {
+  const m = s.metrics;
+  const calm = avg([rank(ctx.col(G.vol), m.vol, false), rank(ctx.col(G.mdd), m.mdd)]);
+  const priceRank = rank(ctx.col(G.price), m.price, false) ?? 50;
+  const afford = s.market === 'US' ? 50 + priceRank / 2 : priceRank;
+  const known = rank(ctx.col(G.cap), m.marketCap) ?? 50;
+  const profit = avg([rank(ctx.col(G.roe), m.roe), rank(ctx.col(G.margin), m.profitMargin)]);
+  let profitScore = profit.value;
+  if (ok(m.profitMargin) && m.profitMargin < 0) profitScore = Math.min(profitScore, 15);
+  const dividend = rank(ctx.col(G.div), m.divYield ?? 0) ?? 50;
+
+  let score = calm.value * 0.3 + afford * 0.2 + known * 0.2 + profitScore * 0.2 + dividend * 0.1;
+  // 크게 출렁이는 종목은 학생에게 부담
+  if (ok(m.vol) && m.vol > 45) score -= 8;
+  if (ok(m.mdd) && m.mdd < -40) score -= 5;
+
+  const coverage = (calm.known / 2 + (ok(m.marketCap) ? 1 : 0) + profit.known / 2) / 3;
+  return {
+    score: clamp(Math.round(score)),
+    coverage,
+    subs: [
+      { key: 'calm', label: '덜 흔들림', score: Math.round(calm.value), weight: 0.3 },
+      { key: 'afford', label: '소액으로 시작', score: Math.round(afford), weight: 0.2 },
+      { key: 'known', label: '잘 알려진 큰 회사', score: Math.round(known), weight: 0.2 },
+      { key: 'profit', label: '꾸준한 이익', score: Math.round(profitScore), weight: 0.2 },
+      { key: 'dividend', label: '배당', score: Math.round(dividend), weight: 0.1 },
     ],
   };
 }
@@ -444,6 +479,110 @@ function stableReasons(s: Stock): Reason[] {
   return r;
 }
 
+function studentReasons(s: Stock): Reason[] {
+  const m = s.metrics;
+  const r: Reason[] = [];
+  if (s.market === 'KR') {
+    if (m.price <= 100000) {
+      r.push({
+        tone: 'good',
+        title: '용돈으로도 시작 가능',
+        easy: `1주가 약 ${fmtPrice(m.price, s.currency)}이라 적은 돈으로도 한 주씩 모아갈 수 있어요.`,
+        detail: `현재가 ${fmtPrice(m.price, s.currency)}.`,
+        weight: (100000 - m.price) / 25000 + 2,
+      });
+    }
+  } else {
+    r.push({
+      tone: 'info',
+      title: '소수점으로 조금씩',
+      easy: `1주는 ${fmtPrice(m.price, s.currency)}이지만, 국내 증권사 앱의 소수점 투자로 몇천 원어치씩도 살 수 있어요.`,
+      detail: `현재가 ${fmtPrice(m.price, s.currency)}. 소수점 거래 지원 여부는 증권사마다 달라요.`,
+      weight: 1.5,
+    });
+  }
+  if (ok(m.vol) && m.vol < 30) {
+    r.push({
+      tone: 'good',
+      title: '크게 출렁이지 않음',
+      easy: '1년 동안 주가가 비교적 얌전했어요. 처음 투자할 때 마음 졸일 일이 적은 편이에요.',
+      detail: `연 변동성 ${m.vol.toFixed(1)}%, 1년 최대 낙폭 ${fmtPct(m.mdd)}.`,
+      term: 'vol',
+      weight: (30 - m.vol) / 4 + 2,
+    });
+  }
+  if (ok(m.marketCap) && ((s.market === 'KR' && m.marketCap > 2e13) || (s.market === 'US' && m.marketCap > 1.5e11))) {
+    r.push({
+      tone: 'good',
+      title: '누구나 아는 큰 회사',
+      easy: '이름만 들어도 아는 큰 회사라 뉴스로 회사 소식을 따라가기 쉬워요. 공부하면서 투자하기 좋아요.',
+      detail: `시가총액 ${fmtCapShort(m.marketCap, s.currency)}.`,
+      weight: 2,
+    });
+  }
+  if (ok(m.profitMargin) && m.profitMargin > 8 && ok(m.roe) && m.roe > 10) {
+    r.push({
+      tone: 'good',
+      title: '돈을 꾸준히 버는 회사',
+      easy: `매출 100원당 약 ${m.profitMargin.toFixed(0)}원이 남는, 이익을 잘 내는 회사예요.`,
+      detail: `순이익률 ${m.profitMargin.toFixed(1)}%, ROE ${m.roe.toFixed(1)}%.`,
+      term: 'roe',
+      weight: 2 + m.roe / 20,
+    });
+  }
+  if (ok(m.divYield) && m.divYield >= 2) {
+    r.push({
+      tone: 'good',
+      title: '배당으로 받는 용돈',
+      easy: `들고만 있어도 1년에 주가의 약 ${m.divYield.toFixed(1)}%를 배당으로 받아요. 10만 원어치면 약 ${Math.round(m.divYield * 1000).toLocaleString('ko-KR')}원(세전)이에요.`,
+      detail: `배당수익률 ${m.divYield.toFixed(2)}%${ok(m.payout) ? `, 배당성향 ${m.payout.toFixed(0)}%` : ''}.`,
+      term: 'div',
+      weight: Math.min(m.divYield, 6) / 2 + 1,
+    });
+  }
+
+  // 주의할 점
+  if (s.market === 'KR' && m.price > 300000) {
+    r.push({
+      tone: 'warn',
+      title: '1주 가격이 비쌈',
+      easy: `1주가 ${fmtPrice(m.price, s.currency)}이라 용돈으로 모으기엔 부담될 수 있어요.`,
+      detail: `현재가 ${fmtPrice(m.price, s.currency)}.`,
+      weight: 2,
+    });
+  }
+  if (ok(m.vol) && m.vol > 45) {
+    r.push({
+      tone: 'warn',
+      title: '크게 출렁임',
+      easy: '주가가 오르내리는 폭이 커서 처음 투자하기엔 마음고생할 수 있어요. 산다면 아주 조금만 사세요.',
+      detail: `연 변동성 ${m.vol.toFixed(0)}%, 1년 최대 낙폭 ${fmtPct(m.mdd)}.`,
+      term: 'vol',
+      weight: 3,
+    });
+  }
+  if (ok(m.profitMargin) && m.profitMargin < 0) {
+    r.push({
+      tone: 'warn',
+      title: '현재 적자',
+      easy: '최근 손해를 보고 있는 회사예요. 처음 투자하는 종목으로는 조심하세요.',
+      detail: `순이익률 ${m.profitMargin.toFixed(1)}%.`,
+      term: 'margin',
+      weight: 3,
+    });
+  }
+  if (ok(m.ret1y) && m.ret1y < -15) {
+    r.push({
+      tone: 'warn',
+      title: '1년 동안 많이 내림',
+      easy: `최근 1년 동안 주가가 ${fmtPct(-m.ret1y, 0, false)} 내렸어요. 왜 내렸는지 뉴스를 먼저 찾아보세요.`,
+      detail: `1년 수익률 ${fmtPct(m.ret1y)}.`,
+      weight: 2,
+    });
+  }
+  return r;
+}
+
 function fmtCapShort(v: number, currency: string) {
   if (currency === 'KRW') return v >= 1e12 ? `${(v / 1e12).toFixed(1)}조 원` : `${Math.round(v / 1e8).toLocaleString('ko-KR')}억 원`;
   return v >= 1e12 ? `$${(v / 1e12).toFixed(2)}T` : `$${(v / 1e9).toFixed(0)}B`;
@@ -465,7 +604,7 @@ function makeSummary(kind: RecommendationKind, score: number, reasons: Reason[])
       : '눈에 띄는 장점은 없지만 여러 지표가 고르게 무난해요.';
   const verdict =
     score >= 75
-      ? `${kind === 'buyNow' ? '지금' : '오래 들고 가기에'} 눈여겨볼 만해요.`
+      ? `${kind === 'buyNow' ? '지금' : kind === 'student' ? '처음 투자하는 학생에게' : '오래 들고 가기에'} 눈여겨볼 만해요.`
       : score >= 60
         ? '관심 가져볼 만해요.'
         : '다른 후보와 비교해 보세요.';
@@ -477,8 +616,11 @@ export function scoreMarket(stocks: Stock[], kind: RecommendationKind): Scored[]
   const ctx = makeCtx(stocks);
   return stocks
     .map((stock) => {
-      const res = kind === 'buyNow' ? scoreBuyNow(stock, ctx) : scoreStable(stock, ctx);
-      const reasons = pickReasons(kind === 'buyNow' ? buyNowReasons(stock) : stableReasons(stock));
+      const res =
+        kind === 'buyNow' ? scoreBuyNow(stock, ctx) : kind === 'student' ? scoreStudent(stock, ctx) : scoreStable(stock, ctx);
+      const reasons = pickReasons(
+        kind === 'buyNow' ? buyNowReasons(stock) : kind === 'student' ? studentReasons(stock) : stableReasons(stock),
+      );
       return {
         stock,
         kind,

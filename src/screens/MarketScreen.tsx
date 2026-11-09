@@ -19,6 +19,11 @@ const SECTIONS: { kind: RecommendationKind; desc: string; how: string }[] = [
     desc: '주가가 덜 흔들리고, 배당을 주며, 재무가 튼튼해서 오래 들고 가기 좋은 종목',
     how: '덜 흔들림 35% · 하락 방어 20% · 배당 20% · 재무 튼튼함 25%',
   },
+  {
+    kind: 'student',
+    desc: '용돈 수준의 적은 돈으로 시작할 수 있고, 누구나 아는 회사라 공부하며 투자하기 좋은 종목',
+    how: '덜 흔들림 30% · 소액으로 시작 20% · 잘 알려진 큰 회사 20% · 꾸준한 이익 20% · 배당 10%',
+  },
 ];
 
 interface Props {
@@ -30,15 +35,23 @@ interface Props {
 export function MarketScreen({ market, mode, stocks }: Props) {
   const universe = useMemo(() => stocks.filter((s) => s.market === market), [stocks, market]);
   const lists = useMemo(
-    () => ({ buyNow: scoreMarket(universe, 'buyNow'), stable: scoreMarket(universe, 'stable') }),
+    () => ({
+      buyNow: scoreMarket(universe, 'buyNow'),
+      stable: scoreMarket(universe, 'stable'),
+      student: scoreMarket(universe, 'student'),
+    }),
     [universe],
   );
   const [selected, setSelected] = useState<Scored | null>(null);
   const [expertKind, setExpertKind] = useState<RecommendationKind>('buyNow');
-  const [expanded, setExpanded] = useState<Record<RecommendationKind, boolean>>({ buyNow: false, stable: false });
+  const [expanded, setExpanded] = useState<Record<RecommendationKind, boolean>>({
+    buyNow: false,
+    stable: false,
+    student: false,
+  });
 
   const other = selected
-    ? lists[selected.kind === 'buyNow' ? 'stable' : 'buyNow'].find((s) => s.stock.code === selected.stock.code) ?? null
+    ? lists[selected.kind === 'stable' ? 'buyNow' : 'stable'].find((s) => s.stock.code === selected.stock.code) ?? null
     : null;
 
   return (

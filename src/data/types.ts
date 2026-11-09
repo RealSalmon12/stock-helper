@@ -1,6 +1,6 @@
 export type Market = 'KR' | 'US';
 
-export type RecommendationKind = 'buyNow' | 'stable';
+export type RecommendationKind = 'buyNow' | 'stable' | 'student';
 
 export type Mode = 'beginner' | 'expert';
 

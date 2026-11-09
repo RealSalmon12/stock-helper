@@ -16,7 +16,7 @@ npm run ios      # iOS (Expo Go, 또는 macOS)
 ## 구조
 
 - `App.tsx`: 메인 화면 (한국장/미국장 탭)
-- `src/screens/MarketScreen.tsx`: 시장별 추천 목록 ("지금 사기 좋은 종목", "안정적인 종목")
+- `src/screens/MarketScreen.tsx`: 시장별 추천 목록 ("지금 사기 좋은 종목", "안정적인 종목", "학생에게 좋은 종목")
 - `src/data/placeholder.ts`: 지금은 화면 확인용 예시 데이터
 
 ## 다음 단계

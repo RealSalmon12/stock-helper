@@ -63,12 +63,12 @@ export function ExpertList({ lists, kind, onKind, onOpen }: Props) {
   return (
     <View>
       <View style={styles.seg}>
-        {(['buyNow', 'stable'] as RecommendationKind[]).map((k) => {
+        {(['buyNow', 'stable', 'student'] as RecommendationKind[]).map((k) => {
           const on = k === kind;
           return (
             <Pressable key={k} onPress={() => onKind(k)} style={[styles.segBtn, on && { backgroundColor: accent[k].main }]}>
               <Text style={[styles.segText, on && { color: '#fff' }]}>
-                {accent[k].icon} {accent[k].label.replace(' 종목', '')}
+                {accent[k].icon} {accent[k].short}
               </Text>
             </Pressable>
           );

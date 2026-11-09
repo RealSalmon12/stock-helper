@@ -28,9 +28,10 @@ export const colors = {
   warnText: '#8A5A00',
 };
 
-export const accent: Record<RecommendationKind, { main: string; soft: string; label: string; icon: string }> = {
-  buyNow: { main: '#F0562E', soft: '#FFEFE9', label: '지금 사기 좋은 종목', icon: '🚀' },
-  stable: { main: '#0E9384', soft: '#E3F6F3', label: '안정적인 종목', icon: '🛡️' },
+export const accent: Record<RecommendationKind, { main: string; soft: string; label: string; short: string; icon: string }> = {
+  buyNow: { main: '#F0562E', soft: '#FFEFE9', label: '지금 사기 좋은 종목', short: '지금 사기', icon: '🚀' },
+  stable: { main: '#0E9384', soft: '#E3F6F3', label: '안정적인 종목', short: '안정적', icon: '🛡️' },
+  student: { main: '#7A5AF8', soft: '#F0ECFF', label: '학생에게 좋은 종목', short: '학생용', icon: '🎒' },
 };
 
 export const radius = { sm: 8, md: 14, lg: 20, pill: 999 };

@@ -6,7 +6,7 @@ import { MarketMood } from '../components/MarketMood';
 import { StockCard } from '../components/StockCard';
 import { Market, Mode, RecommendationKind, Scored, Stock } from '../data/types';
 import { scoreMarket } from '../logic/score';
-import { accent, colors, radius } from '../theme';
+import { accent, colors, radius, font } from '../theme';
 
 const SECTIONS: { kind: RecommendationKind; desc: string; how: string }[] = [
   {
@@ -65,9 +65,7 @@ export function MarketScreen({ market, mode, stocks }: Props) {
           return (
             <View key={s.kind}>
               <View style={styles.sectionHead}>
-                <View style={[styles.sectionIcon, { backgroundColor: a.soft }]}>
-                  <Text style={{ fontSize: 18 }}>{a.icon}</Text>
-                </View>
+                <View style={[styles.sectionTab, { backgroundColor: a.main }]} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.title}>{a.label}</Text>
                   <Text style={styles.desc}>{s.desc}</Text>
@@ -103,10 +101,10 @@ export function MarketScreen({ market, mode, stocks }: Props) {
 }
 
 const styles = StyleSheet.create({
-  sectionHead: { flexDirection: 'row', gap: 12, alignItems: 'center', marginBottom: 12, marginTop: 8 },
-  sectionIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 20, fontWeight: '800', color: colors.text, letterSpacing: -0.3 },
-  desc: { fontSize: 13, color: colors.sub, marginTop: 2, lineHeight: 19 },
+  sectionHead: { flexDirection: 'row', gap: 12, alignItems: 'center', marginBottom: 12, marginTop: 18 },
+  sectionTab: { width: 6, alignSelf: 'stretch', borderRadius: 2 },
+  title: { fontSize: 20, fontFamily: font.bold, color: colors.text, letterSpacing: -0.3 },
+  desc: { fontSize: 13, fontFamily: font.regular, color: colors.sub, marginTop: 2, lineHeight: 19 },
   moreBtn: {
     alignItems: 'center',
     paddingVertical: 12,
@@ -115,5 +113,5 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     backgroundColor: colors.card,
   },
-  moreText: { color: colors.primary, fontWeight: '700', fontSize: 14 },
+  moreText: { color: colors.primary, fontFamily: font.bold, fontSize: 14 },
 });

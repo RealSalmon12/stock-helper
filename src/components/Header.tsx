@@ -1,9 +1,9 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle, Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Defs, Path, Pattern, Rect } from 'react-native-svg';
 import { LoadState } from '../data/useMarketData';
 import { Market, Mode } from '../data/types';
 import { fmtDate } from '../logic/format';
-import { colors, radius } from '../theme';
+import { colors, radius, font } from '../theme';
 
 interface Props {
   mode: Mode;
@@ -18,16 +18,14 @@ interface Props {
 export function Header({ mode, onMode, market, onMarket, updatedAt, loadState, onRefresh }: Props) {
   return (
     <View style={styles.wrap}>
-      <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" preserveAspectRatio="none">
+      {/* 모눈 노트 배경 */}
+      <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
         <Defs>
-          <LinearGradient id="hdr" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0" stopColor={colors.navy} />
-            <Stop offset="1" stopColor={colors.navy2} />
-          </LinearGradient>
+          <Pattern id="grid" width={18} height={18} patternUnits="userSpaceOnUse">
+            <Path d="M 18 0 L 0 0 0 18" fill="none" stroke={colors.grid} strokeWidth={1} />
+          </Pattern>
         </Defs>
-        <Rect width="100%" height="100%" fill="url(#hdr)" />
-        <Circle cx="92%" cy="8%" r="90" fill="#3B5BFD" opacity={0.25} />
-        <Circle cx="78%" cy="96%" r="60" fill="#F0562E" opacity={0.12} />
+        <Rect width="100%" height="100%" fill="url(#grid)" />
       </Svg>
 
       <View style={styles.topRow}>
@@ -37,6 +35,16 @@ export function Header({ mode, onMode, market, onMarket, updatedAt, loadState, o
         </View>
         <ModeToggle value={mode} onChange={onMode} />
       </View>
+
+      <Pressable onPress={onRefresh} style={styles.updated} accessibilityRole="button" accessibilityLabel="데이터 새로고침">
+        <View style={[styles.dot, { backgroundColor: loadState === 'offline' ? '#E0A100' : colors.good }]} />
+        <Text style={styles.updatedText}>
+          {loadState === 'loading'
+            ? '최신 데이터 확인 중…'
+            : `${fmtDate(updatedAt)} 기준 시세${loadState === 'offline' ? ' (저장된 데이터)' : ''}`}
+        </Text>
+        <Text style={styles.refresh}>↻</Text>
+      </Pressable>
 
       <View style={styles.tabs} accessibilityRole="tablist">
         {(['KR', 'US'] as Market[]).map((m) => {
@@ -49,23 +57,11 @@ export function Header({ mode, onMode, market, onMarket, updatedAt, loadState, o
               onPress={() => onMarket(m)}
               style={[styles.tab, active && styles.tabActive]}
             >
-              <Text style={[styles.tabText, active && styles.tabTextActive]}>
-                {m === 'KR' ? '🇰🇷 한국장' : '🇺🇸 미국장'}
-              </Text>
+              <Text style={[styles.tabText, active && styles.tabTextActive]}>{m === 'KR' ? '한국장' : '미국장'}</Text>
             </Pressable>
           );
         })}
       </View>
-
-      <Pressable onPress={onRefresh} style={styles.updated} accessibilityRole="button" accessibilityLabel="데이터 새로고침">
-        <View style={[styles.dot, { backgroundColor: loadState === 'offline' ? '#F5A524' : '#3DDC97' }]} />
-        <Text style={styles.updatedText}>
-          {loadState === 'loading'
-            ? '최신 데이터 확인 중…'
-            : `${fmtDate(updatedAt)} 기준 시세${loadState === 'offline' ? ' (저장된 데이터)' : ''}`}
-        </Text>
-        <Text style={styles.refresh}>↻</Text>
-      </Pressable>
     </View>
   );
 }
@@ -98,32 +94,36 @@ function ModeToggle({ value, onChange }: { value: Mode; onChange: (m: Mode) => v
 
 const styles = StyleSheet.create({
   wrap: {
-    borderRadius: radius.lg + 4,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
     overflow: 'hidden',
-    padding: 20,
-    paddingBottom: 16,
+    paddingTop: 22,
+    paddingHorizontal: 20,
   },
   topRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  title: { color: '#fff', fontSize: 26, fontWeight: '800', letterSpacing: -0.5 },
-  sub: { color: 'rgba(255,255,255,0.72)', fontSize: 13, marginTop: 4 },
-  mode: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: radius.pill, padding: 3 },
-  modeBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: radius.pill },
-  modeBtnActive: { backgroundColor: '#fff' },
-  modeText: { color: 'rgba(255,255,255,0.8)', fontWeight: '700', fontSize: 13 },
-  modeTextActive: { color: colors.navy },
-  tabs: {
+  title: { color: colors.text, fontSize: 30, lineHeight: 38, fontFamily: font.bold, letterSpacing: -0.8 },
+  sub: { color: colors.sub, fontSize: 13, fontFamily: font.regular, marginTop: 2 },
+  mode: {
     flexDirection: 'row',
-    marginTop: 20,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: radius.md,
-    padding: 4,
+    borderWidth: 1,
+    borderColor: colors.text,
+    borderRadius: radius.sm,
+    overflow: 'hidden',
+    backgroundColor: colors.card,
   },
-  tab: { flex: 1, paddingVertical: 11, borderRadius: radius.md - 4, alignItems: 'center' },
-  tabActive: { backgroundColor: '#fff' },
-  tabText: { color: 'rgba(255,255,255,0.78)', fontSize: 15, fontWeight: '700' },
-  tabTextActive: { color: colors.navy },
+  modeBtn: { paddingHorizontal: 12, paddingVertical: 6 },
+  modeBtnActive: { backgroundColor: colors.text },
+  modeText: { color: colors.text, fontFamily: font.bold, fontSize: 13 },
+  modeTextActive: { color: '#fff' },
   updated: { flexDirection: 'row', alignItems: 'center', marginTop: 14, alignSelf: 'flex-start' },
   dot: { width: 7, height: 7, borderRadius: 4, marginRight: 7 },
-  updatedText: { color: 'rgba(255,255,255,0.75)', fontSize: 12 },
-  refresh: { color: 'rgba(255,255,255,0.75)', fontSize: 13, marginLeft: 6 },
+  updatedText: { color: colors.sub, fontSize: 12, fontFamily: font.regular },
+  refresh: { color: colors.sub, fontSize: 13, fontFamily: font.regular, marginLeft: 6 },
+  tabs: { flexDirection: 'row', marginTop: 18, gap: 24 },
+  tab: { paddingTop: 6, paddingBottom: 10, borderBottomWidth: 3, borderBottomColor: 'transparent' },
+  tabActive: { borderBottomColor: colors.text },
+  tabText: { color: colors.faint, fontSize: 18, fontFamily: font.bold },
+  tabTextActive: { color: colors.text },
 });

@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Scored } from '../data/types';
 import { fmtPct, fmtPrice } from '../logic/format';
-import { accent, changeColor, colors, radius, scoreLabel, shadow } from '../theme';
+import { accent, changeColor, colors, radius, scoreLabel, shadow, font } from '../theme';
 import { ScoreRing } from './ScoreRing';
 import { Sparkline } from './Sparkline';
 
@@ -22,9 +22,7 @@ export function StockCard({ item, rank, onPress }: { item: Scored; rank: number;
       accessibilityLabel={`${stock.name}, 추천 점수 ${score}점. 자세히 보기`}
     >
       <View style={styles.head}>
-        <View style={[styles.rank, { backgroundColor: a.soft }]}>
-          <Text style={[styles.rankText, { color: a.main }]}>{rank}</Text>
-        </View>
+        <Text style={[styles.rankText, { color: a.main }]}>{rank}</Text>
         <View style={{ flex: 1 }}>
           <View style={styles.nameRow}>
             <Text style={styles.name} numberOfLines={1}>
@@ -38,7 +36,7 @@ export function StockCard({ item, rank, onPress }: { item: Scored; rank: number;
           </View>
         </View>
         <View style={{ alignItems: 'center' }}>
-          <ScoreRing score={score} size={52} />
+          <ScoreRing score={score} size={50} kind={kind} />
           <Text style={styles.scoreLabel}>{scoreLabel(score)}</Text>
         </View>
       </View>
@@ -56,12 +54,12 @@ export function StockCard({ item, rank, onPress }: { item: Scored; rank: number;
       <View style={styles.tags}>
         {goods.map((r, i) => (
           <View key={i} style={[styles.tag, { backgroundColor: colors.goodSoft }]}>
-            <Text style={[styles.tagText, { color: colors.good }]}>👍 {r.title}</Text>
+            <Text style={[styles.tagText, { color: colors.good }]}>{r.title}</Text>
           </View>
         ))}
         {warn && (
           <View style={[styles.tag, { backgroundColor: colors.warnSoft }]}>
-            <Text style={[styles.tagText, { color: colors.warn }]}>⚠️ {warn.title}</Text>
+            <Text style={[styles.tagText, { color: colors.warn }]}>주의 · {warn.title}</Text>
           </View>
         )}
       </View>
@@ -76,18 +74,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderRadius: radius.lg,
     padding: 16,
-    marginBottom: 12,
+    paddingLeft: 12,
+    marginBottom: 10,
   },
   head: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  rank: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  rankText: { fontWeight: '800', fontSize: 15 },
+  rankText: { fontFamily: font.bold, fontSize: 20, width: 22, textAlign: 'center' },
   nameRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
-  name: { fontSize: 17, fontWeight: '800', color: colors.text, flexShrink: 1 },
-  sector: { fontSize: 12, color: colors.faint },
+  name: { fontSize: 17, fontFamily: font.bold, color: colors.text, flexShrink: 1 },
+  sector: { fontSize: 12, fontFamily: font.regular, color: colors.faint },
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6, marginTop: 2 },
-  price: { fontSize: 14, color: colors.text, fontWeight: '600' },
-  change: { fontSize: 13, fontWeight: '700' },
-  scoreLabel: { fontSize: 11, color: colors.sub, marginTop: 3, fontWeight: '600' },
+  price: { fontSize: 14, color: colors.text, fontFamily: font.bold },
+  change: { fontSize: 13, fontFamily: font.bold },
+  scoreLabel: { fontSize: 18, fontFamily: font.pen, color: colors.sub, marginTop: -2 },
   sparkRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -98,11 +96,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   sparkMeta: { flex: 1, alignItems: 'flex-end' },
-  sparkLabel: { fontSize: 11, color: colors.faint },
-  sparkValue: { fontSize: 16, fontWeight: '800' },
-  summary: { fontSize: 14, color: colors.text, lineHeight: 21, marginTop: 12 },
+  sparkLabel: { fontSize: 11, fontFamily: font.regular, color: colors.faint },
+  sparkValue: { fontSize: 16, fontFamily: font.bold },
+  summary: { fontSize: 14, fontFamily: font.regular, color: colors.text, lineHeight: 21, marginTop: 12 },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
   tag: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill },
-  tagText: { fontSize: 12, fontWeight: '700' },
-  more: { marginTop: 12, color: colors.primary, fontWeight: '700', fontSize: 13, textAlign: 'right' },
+  tagText: { fontSize: 12, fontFamily: font.bold },
+  more: { marginTop: 12, color: colors.primary, fontFamily: font.bold, fontSize: 13, textAlign: 'right' },
 });

@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, radius } from '../theme';
+import { colors, radius, font } from '../theme';
 
 export function Disclaimer({ compact = false }: { compact?: boolean }) {
   return (
@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   compact: { padding: 10 },
-  icon: { fontSize: 13, lineHeight: 18 },
-  text: { flex: 1, color: colors.warnText, fontSize: 12, lineHeight: 18 },
-  bold: { fontWeight: '800' },
+  icon: { fontSize: 13, fontFamily: font.regular, lineHeight: 18 },
+  text: { flex: 1, color: colors.warnText, fontSize: 12, fontFamily: font.regular, lineHeight: 18 },
+  bold: { fontFamily: font.bold },
 });

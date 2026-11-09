@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { RecommendationKind, Scored } from '../data/types';
 import { fmtNum, fmtPct, fmtPrice } from '../logic/format';
-import { accent, changeColor, colors, radius, scoreColor, shadow } from '../theme';
+import { accent, changeColor, colors, radius, scoreColor, shadow, font } from '../theme';
 import { Sparkline } from './Sparkline';
 
 type SortKey = 'score' | 'div' | 'per' | 'vol' | 'ret6m' | 'roe';
@@ -68,7 +68,7 @@ export function ExpertList({ lists, kind, onKind, onOpen }: Props) {
           return (
             <Pressable key={k} onPress={() => onKind(k)} style={[styles.segBtn, on && { backgroundColor: accent[k].main }]}>
               <Text style={[styles.segText, on && { color: '#fff' }]}>
-                {accent[k].icon} {accent[k].short}
+                {accent[k].short}
               </Text>
             </Pressable>
           );
@@ -177,8 +177,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  segText: { fontWeight: '800', fontSize: 14, color: colors.text },
-  label: { fontSize: 12, fontWeight: '800', color: colors.faint, marginTop: 14, marginBottom: 6 },
+  segText: { fontFamily: font.bold, fontSize: 14, color: colors.text },
+  label: { fontSize: 12, fontFamily: font.bold, color: colors.faint, marginTop: 14, marginBottom: 6 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   chip: {
     paddingHorizontal: 12,
@@ -189,27 +189,27 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   chipOn: { backgroundColor: colors.navy, borderColor: colors.navy },
-  chipText: { fontSize: 12, fontWeight: '700', color: colors.sub },
+  chipText: { fontSize: 12, fontFamily: font.bold, color: colors.sub },
   chipTextOn: { color: '#fff' },
-  count: { fontSize: 12, color: colors.sub, marginTop: 14, marginBottom: 8 },
+  count: { fontSize: 12, fontFamily: font.regular, color: colors.sub, marginTop: 14, marginBottom: 8 },
   table: { backgroundColor: colors.card, borderRadius: radius.lg, overflow: 'hidden' },
   row: { padding: 14 },
   rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.line },
   rowHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  rowRank: { width: 20, fontSize: 13, fontWeight: '800', color: colors.faint, textAlign: 'center' },
-  rowName: { fontSize: 15, fontWeight: '800', color: colors.text },
-  rowCode: { fontSize: 11, color: colors.faint, fontWeight: '500' },
-  rowPrice: { fontSize: 12, color: colors.sub, marginTop: 2 },
+  rowRank: { width: 20, fontSize: 13, fontFamily: font.bold, color: colors.faint, textAlign: 'center' },
+  rowName: { fontSize: 15, fontFamily: font.bold, color: colors.text },
+  rowCode: { fontSize: 11, color: colors.faint, fontFamily: font.regular },
+  rowPrice: { fontSize: 12, fontFamily: font.regular, color: colors.sub, marginTop: 2 },
   scoreBox: { width: 40, height: 32, borderRadius: 10, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
-  scoreNum: { fontSize: 15, fontWeight: '800' },
+  scoreNum: { fontSize: 15, fontFamily: font.bold },
   subs: { flexDirection: 'row', gap: 8, marginTop: 10, paddingLeft: 30 },
   sub: { flex: 1 },
-  subLabel: { fontSize: 10, color: colors.faint, marginBottom: 3 },
+  subLabel: { fontSize: 10, fontFamily: font.regular, color: colors.faint, marginBottom: 3 },
   subBar: { height: 4, backgroundColor: colors.line, borderRadius: 2, overflow: 'hidden' },
   subFill: { height: 4, borderRadius: 2 },
   cells: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 10, paddingLeft: 30 },
   cell: { width: '25%', paddingVertical: 3 },
-  cellK: { fontSize: 10, color: colors.faint },
-  cellV: { fontSize: 13, fontWeight: '700', color: colors.text },
+  cellK: { fontSize: 10, fontFamily: font.regular, color: colors.faint },
+  cellV: { fontSize: 13, fontFamily: font.bold, color: colors.text },
   empty: { padding: 20, textAlign: 'center', color: colors.sub },
 });

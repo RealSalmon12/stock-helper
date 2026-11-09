@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Mode, Reason } from '../data/types';
-import { colors, radius } from '../theme';
+import { colors, radius, font } from '../theme';
 import { TermChip } from './Terms';
 
 const TONE = {
@@ -38,10 +38,10 @@ export function ReasonList({ reasons, mode, limit }: { reasons: Reason[]; mode: 
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 10, padding: 12, borderRadius: radius.md },
-  icon: { fontSize: 15, lineHeight: 21 },
+  icon: { fontSize: 15, fontFamily: font.regular, lineHeight: 21 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-  title: { fontSize: 14, fontWeight: '800' },
-  body: { fontSize: 14, color: colors.text, lineHeight: 21, marginTop: 3 },
-  easySub: { fontSize: 12, color: colors.sub, lineHeight: 18, marginTop: 4 },
-  empty: { fontSize: 14, color: colors.sub },
+  title: { fontSize: 14, fontFamily: font.bold },
+  body: { fontSize: 14, fontFamily: font.regular, color: colors.text, lineHeight: 21, marginTop: 3 },
+  easySub: { fontSize: 12, fontFamily: font.regular, color: colors.sub, lineHeight: 18, marginTop: 4 },
+  empty: { fontSize: 14, fontFamily: font.regular, color: colors.sub },
 });

@@ -4,6 +4,10 @@
 
 > 이 앱의 정보는 투자 조언이 아닌 참고용 정보입니다.
 
+## 웹으로 보기
+
+설치 없이 [realsalmon12.github.io/stock-helper](https://realsalmon12.github.io/stock-helper/)에서 바로 볼 수 있어요. `main`이 바뀌면 자동으로 다시 올라갑니다.
+
 ## 실행
 
 ```bash

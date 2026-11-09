@@ -2,7 +2,7 @@ import { createContext, ReactNode, useCallback, useContext, useState } from 'rea
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { TermKey } from '../data/types';
 import { GLOSSARY } from '../logic/glossary';
-import { colors, radius } from '../theme';
+import { colors, radius, font } from '../theme';
 
 const Ctx = createContext<(k: TermKey) => void>(() => {});
 
@@ -52,10 +52,10 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   sheet: { backgroundColor: '#fff', borderRadius: radius.lg, padding: 22, width: '100%', maxWidth: 420 },
-  kicker: { color: colors.primary, fontWeight: '700', fontSize: 12 },
-  name: { fontSize: 20, fontWeight: '800', color: colors.text, marginTop: 4 },
-  short: { fontSize: 14, color: colors.sub, marginTop: 4, fontWeight: '600' },
-  long: { fontSize: 15, color: colors.text, lineHeight: 23, marginTop: 14 },
+  kicker: { color: colors.primary, fontFamily: font.bold, fontSize: 12 },
+  name: { fontSize: 20, fontFamily: font.bold, color: colors.text, marginTop: 4 },
+  short: { fontSize: 14, color: colors.sub, marginTop: 4, fontFamily: font.bold },
+  long: { fontSize: 15, fontFamily: font.regular, color: colors.text, lineHeight: 23, marginTop: 14 },
   close: {
     marginTop: 20,
     backgroundColor: colors.primary,
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-  closeText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  closeText: { color: '#fff', fontFamily: font.bold, fontSize: 15 },
   chip: {
     alignSelf: 'flex-start',
     backgroundColor: colors.primarySoft,
@@ -71,5 +71,5 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: radius.pill,
   },
-  chipText: { color: colors.primary, fontSize: 11, fontWeight: '700' },
+  chipText: { color: colors.primary, fontSize: 11, fontFamily: font.bold },
 });

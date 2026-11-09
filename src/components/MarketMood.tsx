@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Mode, Stock } from '../data/types';
-import { colors, radius, shadow } from '../theme';
+import { colors, radius, shadow, font } from '../theme';
 import { TermChip } from './Terms';
 
 /** 시장 분위기: 후보 종목 중 몇 개가 장기 상승 흐름(200일선 위)인지 */
@@ -56,12 +56,12 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: 16,
   },
-  emoji: { fontSize: 34 },
-  kicker: { fontSize: 12, color: colors.faint, fontWeight: '700' },
-  title: { fontSize: 18, fontWeight: '800', color: colors.text, marginTop: 1 },
-  desc: { fontSize: 13, color: colors.sub, lineHeight: 19, marginTop: 4 },
+  emoji: { fontSize: 34, fontFamily: font.regular },
+  kicker: { fontSize: 12, color: colors.faint, fontFamily: font.bold },
+  title: { fontSize: 18, fontFamily: font.bold, color: colors.text, marginTop: 1 },
+  desc: { fontSize: 13, fontFamily: font.regular, color: colors.sub, lineHeight: 19, marginTop: 4 },
   beginnerStats: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  stats: { fontSize: 12, color: colors.text, fontWeight: '700', marginTop: 8, marginBottom: 6 },
+  stats: { fontSize: 12, color: colors.text, fontFamily: font.bold, marginTop: 8, marginBottom: 6 },
   bar: { flexDirection: 'row', height: 6, borderRadius: 3, overflow: 'hidden', backgroundColor: colors.line },
   barUp: { backgroundColor: colors.up },
   barDown: { backgroundColor: colors.down, opacity: 0.5 },

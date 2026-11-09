@@ -1,3 +1,6 @@
+import { IBMPlexSansKR_400Regular, IBMPlexSansKR_700Bold } from '@expo-google-fonts/ibm-plex-sans-kr';
+import { NanumPenScript_400Regular } from '@expo-google-fonts/nanum-pen-script';
+import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -8,13 +11,17 @@ import { TermProvider } from './src/components/Terms';
 import { Market, Mode } from './src/data/types';
 import { useMarketData } from './src/data/useMarketData';
 import { MarketScreen } from './src/screens/MarketScreen';
-import { colors, radius } from './src/theme';
+import { colors, radius, font } from './src/theme';
 
 export default function App() {
   const [market, setMarket] = useState<Market>('KR');
   const [mode, setMode] = useState<Mode>('beginner');
   const [showGuide, setShowGuide] = useState(true);
   const { data, state, refresh } = useMarketData();
+  const [fontsLoaded, fontError] = useFonts({ IBMPlexSansKR_400Regular, IBMPlexSansKR_700Bold, NanumPenScript_400Regular });
+
+  // 글꼴을 불러오는 동안은 빈 화면 (실패하면 기본 글꼴로 그냥 보여줌)
+  if (!fontsLoaded && !fontError) return <View style={styles.safe} />;
 
   return (
     <SafeAreaProvider>
@@ -36,7 +43,7 @@ export default function App() {
               {mode === 'beginner' && showGuide && (
                 <View style={styles.guide}>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.guideTitle}>👋 이렇게 보면 돼요</Text>
+                    <Text style={styles.guideTitle}>이렇게 보면 돼요</Text>
                     <Text style={styles.guideText}>
                       점수는 0~100점이고, 같은 시장 종목들끼리 비교한 상대 점수예요. 카드를 누르면 왜 이 점수인지 쉬운 말로
                       설명해 드려요. 파란 <Text style={styles.q}>?</Text> 를 누르면 어려운 용어도 풀어 드려요. 숫자를 더 자세히
@@ -72,14 +79,16 @@ const styles = StyleSheet.create({
   guide: {
     flexDirection: 'row',
     gap: 10,
-    backgroundColor: colors.primarySoft,
-    borderRadius: radius.lg,
+    backgroundColor: colors.card,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+    borderRadius: radius.sm,
     padding: 14,
   },
-  guideTitle: { fontSize: 14, fontWeight: '800', color: colors.text },
-  guideText: { fontSize: 13, color: colors.text, lineHeight: 20, marginTop: 4 },
-  q: { color: colors.primary, fontWeight: '800' },
-  bold: { fontWeight: '800' },
-  guideClose: { fontSize: 14, color: colors.sub },
-  footer: { fontSize: 11, color: colors.faint, textAlign: 'center', lineHeight: 17, marginTop: 8 },
+  guideTitle: { fontSize: 14, fontFamily: font.bold, color: colors.text },
+  guideText: { fontSize: 13, fontFamily: font.regular, color: colors.text, lineHeight: 20, marginTop: 4 },
+  q: { color: colors.primary, fontFamily: font.bold },
+  bold: { fontFamily: font.bold },
+  guideClose: { fontSize: 14, fontFamily: font.regular, color: colors.sub },
+  footer: { fontSize: 11, fontFamily: font.regular, color: colors.faint, textAlign: 'center', lineHeight: 17, marginTop: 8 },
 });

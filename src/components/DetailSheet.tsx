@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Mode, Scored } from '../data/types';
 import { fmtPct, fmtPrice } from '../logic/format';
 import { BEGINNER_KEYS, Judge, METRICS, MetricDef } from '../logic/metrics';
-import { accent, changeColor, colors, radius, scoreColor, scoreLabel } from '../theme';
+import { accent, changeColor, colors, radius, scoreColor, scoreLabel, font } from '../theme';
 import { Disclaimer } from './Disclaimer';
 import { ReasonList } from './ReasonList';
 import { ScoreRing } from './ScoreRing';
@@ -47,7 +47,7 @@ export function DetailSheet({ item, other, mode, onClose }: Props) {
             <Text style={styles.back}>‹ 목록</Text>
           </Pressable>
           <Text style={[styles.kindPill, { color: a.main, backgroundColor: a.soft }]}>
-            {a.icon} {a.label}
+            {a.label}
           </Text>
         </View>
         <ScrollView contentContainerStyle={styles.content}>
@@ -65,7 +65,7 @@ export function DetailSheet({ item, other, mode, onClose }: Props) {
               <Sparkline data={stock.spark} width={chartW - 32} height={140} color={trend} strokeWidth={2.5} />
               <View style={styles.chartMeta}>
                 <Text style={styles.chartLabel}>1년 최저 {m.low52 != null ? fmtPrice(m.low52, stock.currency) : '-'}</Text>
-                <Text style={[styles.chartLabel, { color: trend, fontWeight: '800' }]}>1년 {fmtPct(m.ret1y, 0)}</Text>
+                <Text style={[styles.chartLabel, { color: trend, fontFamily: font.bold }]}>1년 {fmtPct(m.ret1y, 0)}</Text>
                 <Text style={styles.chartLabel}>최고 {m.high52 != null ? fmtPrice(m.high52, stock.currency) : '-'}</Text>
               </View>
             </View>
@@ -73,7 +73,7 @@ export function DetailSheet({ item, other, mode, onClose }: Props) {
             {/* 점수 */}
             <View style={styles.card}>
               <View style={styles.scoreHead}>
-                <ScoreRing score={item.score} size={64} />
+                <ScoreRing score={item.score} size={64} kind={item.kind} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.cardKicker}>{a.label} 점수</Text>
                   <Text style={[styles.scoreVerdict, { color: scoreColor(item.score) }]}>{scoreLabel(item.score)}</Text>
@@ -185,35 +185,35 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
     backgroundColor: colors.card,
   },
-  back: { fontSize: 16, color: colors.primary, fontWeight: '700' },
-  kindPill: { fontSize: 12, fontWeight: '800', paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, overflow: 'hidden' },
+  back: { fontSize: 16, color: colors.primary, fontFamily: font.bold },
+  kindPill: { fontSize: 12, fontFamily: font.bold, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, overflow: 'hidden' },
   content: { padding: 16, alignItems: 'center', paddingBottom: 40 },
   inner: { width: '100%', maxWidth: 640, gap: 14 },
-  code: { fontSize: 13, color: colors.faint, fontWeight: '600' },
-  name: { fontSize: 28, fontWeight: '800', color: colors.text, letterSpacing: -0.5, marginTop: -10 },
+  code: { fontSize: 13, color: colors.faint, fontFamily: font.bold },
+  name: { fontSize: 28, fontFamily: font.bold, color: colors.text, letterSpacing: -0.5, marginTop: -10 },
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: 10, marginTop: -8 },
-  price: { fontSize: 20, fontWeight: '700', color: colors.text },
-  change: { fontSize: 14, fontWeight: '700' },
+  price: { fontSize: 20, fontFamily: font.bold, color: colors.text },
+  change: { fontSize: 14, fontFamily: font.bold },
   chartCard: { backgroundColor: colors.card, borderRadius: radius.lg, padding: 16 },
   chartMeta: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
-  chartLabel: { fontSize: 12, color: colors.sub },
+  chartLabel: { fontSize: 12, fontFamily: font.regular, color: colors.sub },
   card: { backgroundColor: colors.card, borderRadius: radius.lg, padding: 16 },
-  cardTitle: { fontSize: 17, fontWeight: '800', color: colors.text, marginBottom: 10 },
-  cardDesc: { fontSize: 12, color: colors.sub, marginTop: -6 },
-  cardKicker: { fontSize: 12, color: colors.sub, fontWeight: '700' },
+  cardTitle: { fontSize: 17, fontFamily: font.bold, color: colors.text, marginBottom: 10 },
+  cardDesc: { fontSize: 12, fontFamily: font.regular, color: colors.sub, marginTop: -6 },
+  cardKicker: { fontSize: 12, color: colors.sub, fontFamily: font.bold },
   scoreHead: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  scoreVerdict: { fontSize: 22, fontWeight: '800', marginTop: 2 },
-  otherScore: { fontSize: 12, color: colors.faint, marginTop: 2 },
-  summary: { fontSize: 15, lineHeight: 23, color: colors.text, marginTop: 14 },
+  scoreVerdict: { fontSize: 22, fontFamily: font.bold, marginTop: 2 },
+  otherScore: { fontSize: 12, fontFamily: font.regular, color: colors.faint, marginTop: 2 },
+  summary: { fontSize: 15, fontFamily: font.regular, lineHeight: 23, color: colors.text, marginTop: 14 },
   subRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 },
-  subLabel: { fontSize: 13, color: colors.text, fontWeight: '700' },
-  subWeight: { fontSize: 12, color: colors.faint, fontWeight: '500' },
-  subVal: { fontSize: 13, fontWeight: '800' },
+  subLabel: { fontSize: 13, color: colors.text, fontFamily: font.bold },
+  subWeight: { fontSize: 12, color: colors.faint, fontFamily: font.regular },
+  subVal: { fontSize: 13, fontFamily: font.bold },
   barBg: { height: 8, backgroundColor: colors.line, borderRadius: 4, overflow: 'hidden' },
   barFg: { height: 8, borderRadius: 4 },
-  coverage: { fontSize: 12, color: colors.sub, marginTop: 12, lineHeight: 18 },
-  method: { fontSize: 12, color: colors.sub, marginTop: 12, lineHeight: 18 },
-  group: { fontSize: 12, fontWeight: '800', color: colors.faint, marginBottom: 2 },
+  coverage: { fontSize: 12, fontFamily: font.regular, color: colors.sub, marginTop: 12, lineHeight: 18 },
+  method: { fontSize: 12, fontFamily: font.regular, color: colors.sub, marginTop: 12, lineHeight: 18 },
+  group: { fontSize: 12, fontFamily: font.bold, color: colors.faint, marginBottom: 2 },
   metricRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -223,12 +223,12 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.line,
   },
   metricLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  metricLabel: { fontSize: 14, color: colors.text, fontWeight: '600' },
-  metricPlain: { fontSize: 12, color: colors.sub, marginTop: 2 },
-  metricValue: { fontSize: 14, color: colors.text, fontWeight: '700', textAlign: 'right' },
+  metricLabel: { fontSize: 14, color: colors.text, fontFamily: font.bold },
+  metricPlain: { fontSize: 12, fontFamily: font.regular, color: colors.sub, marginTop: 2 },
+  metricValue: { fontSize: 14, color: colors.text, fontFamily: font.bold, textAlign: 'right' },
   judge: {
     fontSize: 11,
-    fontWeight: '800',
+    fontFamily: font.bold,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: radius.pill,
@@ -236,5 +236,5 @@ const styles = StyleSheet.create({
     minWidth: 40,
     textAlign: 'center',
   },
-  source: { fontSize: 11, color: colors.faint, textAlign: 'center' },
+  source: { fontSize: 11, fontFamily: font.regular, color: colors.faint, textAlign: 'center' },
 });

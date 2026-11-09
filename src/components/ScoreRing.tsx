@@ -1,37 +1,48 @@
 import { StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
-import { colors, scoreColor } from '../theme';
+import { RecommendationKind } from '../data/types';
+import { accent, colors, font } from '../theme';
 
-export function ScoreRing({ score, size = 52, label = '점' }: { score: number; size?: number; label?: string }) {
-  const stroke = size * 0.1;
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  const color = scoreColor(score);
+/**
+ * 점수 표시: 선생님이 공책에 점수를 적고 형광펜으로 칠한 모양.
+ * 형광펜 길이는 점수에 비례하고, 색은 추천 종류(지금 사기/안정적/학생용)를 따릅니다.
+ */
+export function ScoreRing({
+  score,
+  size = 52,
+  label = '점',
+  kind = 'buyNow',
+}: {
+  score: number;
+  size?: number;
+  label?: string;
+  kind?: RecommendationKind;
+}) {
+  const w = size * 1.35;
+  const fill = Math.max(0.25, score / 100);
   return (
-    <View style={{ width: size, height: size }}>
-      <Svg width={size} height={size} style={{ transform: [{ rotate: '-90deg' }] }}>
-        <Circle cx={size / 2} cy={size / 2} r={r} stroke={colors.line} strokeWidth={stroke} fill="none" />
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          stroke={color}
-          strokeWidth={stroke}
-          fill="none"
-          strokeDasharray={`${(c * score) / 100} ${c}`}
-          strokeLinecap="round"
-        />
-      </Svg>
-      <View style={[StyleSheet.absoluteFill, styles.center]}>
-        <Text style={[styles.num, { fontSize: size * 0.34, color }]}>{score}</Text>
-        {size >= 48 && <Text style={[styles.unit, { fontSize: size * 0.17 }]}>{label}</Text>}
+    <View style={{ width: w, height: size, justifyContent: 'center' }} accessibilityLabel={`${score}점`}>
+      <View
+        style={[
+          styles.hl,
+          {
+            backgroundColor: accent[kind].hl,
+            width: w * fill,
+            height: size * 0.46,
+            top: size * 0.44,
+          },
+        ]}
+      />
+      <View style={styles.row}>
+        <Text style={[styles.num, { fontSize: size * 1.05, lineHeight: size * 1.1 }]}>{score}</Text>
+        {size >= 40 && <Text style={[styles.unit, { fontSize: size * 0.42 }]}>{label}</Text>}
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { alignItems: 'center', justifyContent: 'center' },
-  num: { fontWeight: '800', lineHeight: undefined, marginBottom: -2 },
-  unit: { color: colors.faint, fontWeight: '600' },
+  hl: { position: 'absolute', left: 0, borderRadius: 3, transform: [{ rotate: '-2.5deg' }], opacity: 0.9 },
+  row: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', gap: 1 },
+  num: { fontFamily: font.pen, color: colors.text },
+  unit: { fontFamily: font.pen, color: colors.sub },
 });

@@ -27,7 +27,8 @@ export default function App() {
   });
   const { data: saved, state, refresh } = useMarketData();
   const krCodes = useMemo(() => saved.stocks.filter((s) => s.market === 'KR').map((s) => s.code), [saved]);
-  const { quotes, info: live } = useLiveQuotes(krCodes);
+  const usCodes = useMemo(() => saved.stocks.filter((s) => s.market === 'US').map((s) => s.code), [saved]);
+  const { quotes, info: live } = useLiveQuotes(krCodes, usCodes);
   const data = useMemo(() => applyLive(saved, quotes), [saved, quotes]);
 
   if (!fontsLoaded && !fontError) return <View style={{ flex: 1, backgroundColor: c.bg }} />;

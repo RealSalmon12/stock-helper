@@ -7,7 +7,7 @@
 
 import { writeFile, mkdir } from 'node:fs/promises';
 import { KR, US } from './universe.mjs';
-import { fetchCrowd, fetchNews, fetchOutlook } from './fetch-extra.mjs';
+import { fetchCrowd, fetchNews, fetchOutlook, nameKeys } from './fetch-extra.mjs';
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
@@ -302,7 +302,7 @@ async function collect(list, market) {
       } catch (e) {
         console.warn(`[${s.code}] 전망 실패: ${e.message}`);
       }
-      const news = await fetchNews(market, s.code, s.yahoo);
+      const news = await fetchNews(market, s.code, s.yahoo, nameKeys(market, s.code, s.name, chart.meta?.shortName ?? chart.meta?.longName));
       const crowd = await fetchCrowd(market, s.code, s.yahoo);
 
       const beta = calcBeta(chart.points, indexPoints);

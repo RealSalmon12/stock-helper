@@ -99,7 +99,7 @@ function naverTime(s) {
 }
 
 async function newsNaver(code) {
-  const j = await get(`https://m.stock.naver.com/api/news/stock/${code}?pageSize=10&page=1`, { Referer: 'https://m.stock.naver.com/' });
+  const j = await get(`https://m.stock.naver.com/api/news/stock/${code}?pageSize=20&page=1`, { Referer: 'https://m.stock.naver.com/' });
   debug(`naver news ${code}`, j);
   const groups = Array.isArray(j) ? j : (j.items ?? j.result ?? []);
   const items = groups.flatMap((g) => (Array.isArray(g.items) ? g.items : [g]));
@@ -118,14 +118,47 @@ async function newsNaver(code) {
 }
 
 async function newsYahoo(symbol) {
-  const j = await get(`https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(symbol)}&quotesCount=0&newsCount=10`);
+  const j = await get(`https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(symbol)}&quotesCount=0&newsCount=15`);
   return (j.news ?? [])
     .filter((n) => !n.relatedTickers || n.relatedTickers.includes(symbol))
     .map((n) => ({ title: n.title, source: n.publisher, url: n.link, t: n.providerPublishTime ?? null }))
     .filter((n) => n.title && n.url);
 }
 
-export async function fetchNews(market, code, symbol) {
+// 국내 종목은 기사에서 줄임말로 많이 불려요
+const ALIAS = {
+  '005930': ['삼전'],
+  '000660': ['하이닉스', '닉스'],
+  '373220': ['LG엔솔', '엔솔'],
+  '207940': ['삼바', '삼성바이오'],
+  '005380': ['현대자동차'],
+  '012330': ['모비스'],
+  '105560': ['KB금융지주'],
+  '055550': ['신한금융'],
+  '086790': ['하나금융'],
+  '316140': ['우리금융'],
+  '138040': ['메리츠'],
+  '005490': ['포스코'],
+  '096770': ['SK이노'],
+  '018260': ['삼성SDS'],
+  '015760': ['한전'],
+  '329180': ['현대중공업'],
+  '012450': ['한화에어로'],
+  '088980': ['맥쿼리'],
+};
+
+/** 기사 제목이 이 종목을 직접 다루는지 판단할 이름들 */
+export function nameKeys(market, code, name, shortName) {
+  const keys = [name, name.replace(/\(.*?\)/g, ''), ...(ALIAS[code] ?? [])];
+  if (market === 'US') {
+    keys.push(code);
+    const first = String(shortName ?? '').split(/[\s,.]+/)[0];
+    if (first && first.length >= 3) keys.push(first);
+  }
+  return [...new Set(keys.filter((k) => k && k.length >= 2))];
+}
+
+export async function fetchNews(market, code, symbol, keys = []) {
   let list = [];
   try {
     list = market === 'KR' ? await newsNaver(code) : await newsYahoo(symbol);
@@ -138,10 +171,12 @@ export async function fetchNews(market, code, symbol) {
     } catch {}
   }
   const seen = new Set();
-  return list
+  const isRel = (t) => keys.some((k) => (/^[A-Z]{1,5}(-[A-Z])?$/.test(k) ? new RegExp(`\\b${k}\\b`).test(t) : t.toLowerCase().includes(k.toLowerCase())));
+  const all = list
     .filter((n) => (seen.has(n.title) ? false : seen.add(n.title)))
-    .slice(0, 6)
-    .map((n) => ({ ...n, tone: tone(n.title) }));
+    .map((n) => ({ ...n, rel: isRel(n.title), tone: tone(n.title) }));
+  // 이 종목을 직접 다룬 기사를 먼저, 모자라면 관련 업종·시장 기사로 채움
+  return [...all.filter((n) => n.rel), ...all.filter((n) => !n.rel)].slice(0, 6);
 }
 
 // ---------- 투자자 반응 ----------

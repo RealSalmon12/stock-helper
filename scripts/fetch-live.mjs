@@ -120,6 +120,18 @@ for (const s of US) {
 await probeCors('naver polling', 'https://polling.finance.naver.com/api/realtime/domestic/stock/005930');
 await probeCors('yahoo chart', 'https://query1.finance.yahoo.com/v8/finance/chart/AAPL?range=1d&interval=5m');
 
+// 웹용 중계 서버(Cloudflare Worker)가 잘 동작하는지 확인
+const PROXY = 'https://stock-helper-proxy.xmfhfhfl.workers.dev';
+for (const path of ['/', '/naver?codes=005930', '/yahoo?symbol=AAPL']) {
+  try {
+    const res = await fetch(PROXY + path, { headers: { Origin: 'https://realsalmon12.github.io' } });
+    const text = await res.text();
+    console.log(`[proxy] ${path}: HTTP ${res.status}, allow-origin=${res.headers.get('access-control-allow-origin')}, ${text.slice(0, 160)}`);
+  } catch (e) {
+    console.log(`[proxy] ${path}: 실패 ${e.message} ${e.cause?.code ?? ''} ${e.cause?.message ?? ''}`);
+  }
+}
+
 const n = Object.keys(quotes).length;
 if (n < 20) {
   console.error(`현재가가 너무 적게 모였어요 (${n}개). 저장하지 않습니다.`);

@@ -32,10 +32,9 @@ npm run ios      # iOS (Expo Go, 또는 macOS)
 
 ## 실시간 시세
 
-- 장이 열려 있는 동안 GitHub Actions(`.github/workflows/live-quotes.yml`)가 약 5분마다 현재가와 오늘 5분봉을 모아 `live` 브랜치의 `live.json`에 올려요. (`scripts/fetch-live.mjs`, 국내는 네이버 증권 실시간 시세, 해외는 Yahoo Finance)
-- 앱과 웹은 이 파일을 1분마다 확인해서 가격, 등락률, 순위, "오늘" 그래프를 바꿔요.
-- 휴대폰 앱에서는 국내 종목을 네이버에서 15초마다 직접 받아와 더 빨라요. 웹 브라우저는 보안 정책(CORS) 때문에 직접 받을 수 없어 `live.json`만 써요.
-- GitHub 예약 실행은 몇 분씩 늦어질 수 있어서 웹 기준으로는 약 5~15분 지연이 있을 수 있어요. 해외 주식 Yahoo 시세도 약간 지연될 수 있어요.
+- **휴대폰 앱**: 국내 종목은 네이버 증권에서 5초마다, 해외 종목은 Yahoo Finance에서 10초마다 직접 받아 가격·등락률·순위가 바로바로 바뀌어요.
+- **웹**: 브라우저 보안 정책(CORS) 때문에 직접 받을 수 없어요. [proxy/README.md](proxy/README.md)대로 무료 Cloudflare Worker를 하나 만들어 `LIVE_PROXY`에 넣으면 웹도 앱과 똑같이 바뀌어요.
+- 예비용으로 GitHub Actions(`.github/workflows/live-quotes.yml`)가 장중 약 5분마다 `live` 브랜치에 `live.json`을 올리고, 앱·웹이 1분마다 확인해요. Worker가 없을 때 웹은 이걸로 약 5~15분 간격으로 바뀌어요.
 
 ## 구조
 

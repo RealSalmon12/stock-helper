@@ -5,12 +5,21 @@ import { MarketData, Stock } from './types';
 /**
  * 장중 현재가
  *
- * 1) GitHub Actions가 장중 약 5분마다 live 브랜치에 올리는 live.json 을 1분마다 확인해요. (웹·앱 공통)
- * 2) 휴대폰 앱에서는 네이버 증권 실시간 시세를 15초마다 직접 받아 국내 종목 가격을 더 빨리 바꿔요.
- *    (웹 브라우저는 보안 정책(CORS) 때문에 네이버에 직접 물어볼 수 없어서 1번만 써요.)
+ * 1) GitHub Actions가 장중 약 5분마다 live 브랜치에 올리는 live.json 을 1분마다 확인해요. (웹·앱 공통, 예비용)
+ * 2) 바로바로 바뀌는 시세:
+ *    - 휴대폰 앱: 국내는 네이버 증권에서 5초마다, 해외는 Yahoo Finance에서 10초마다 직접 받아요.
+ *    - 웹: 브라우저 보안 정책(CORS) 때문에 직접 못 받아서, LIVE_PROXY(무료 Cloudflare Worker, proxy/worker.js)를
+ *      설정하면 그걸 거쳐 같은 간격으로 받아요. 비어 있으면 1번만 써요.
  */
 const LIVE_URL = 'https://raw.githubusercontent.com/RealSalmon12/stock-helper/live/live.json';
 const NAVER_URL = 'https://polling.finance.naver.com/api/realtime/domestic/stock/';
+const YAHOO_URL = 'https://query1.finance.yahoo.com/v8/finance/chart/';
+/** 예: 'https://stock-helper-proxy.내이름.workers.dev' (끝에 / 없이) */
+export const LIVE_PROXY = '';
+
+const KR_EVERY = 5_000;
+const US_EVERY = 10_000;
+const canDirect = Platform.OS !== 'web' || !!LIVE_PROXY;
 
 export interface LiveQuote {
   price: number;
@@ -41,7 +50,11 @@ const num = (s: unknown) => {
 async function fetchNaver(codes: string[]): Promise<Record<string, LiveQuote>> {
   const out: Record<string, LiveQuote> = {};
   for (let i = 0; i < codes.length; i += 20) {
-    const res = await fetch(NAVER_URL + codes.slice(i, i + 20).join(','), { headers: { Referer: 'https://m.stock.naver.com/' } });
+    const part = codes.slice(i, i + 20).join(',');
+    const res =
+      Platform.OS === 'web'
+        ? await fetch(`${LIVE_PROXY}/naver?codes=${part}`)
+        : await fetch(NAVER_URL + part, { headers: { Referer: 'https://m.stock.naver.com/' } });
     if (!res.ok) throw new Error(String(res.status));
     const j = await res.json();
     for (const d of j.datas ?? []) {
@@ -62,7 +75,45 @@ async function fetchNaver(codes: string[]): Promise<Record<string, LiveQuote>> {
   return out;
 }
 
-export function useLiveQuotes(krCodes: string[]) {
+async function fetchYahooOne(symbol: string): Promise<LiveQuote | null> {
+  const url =
+    Platform.OS === 'web'
+      ? `${LIVE_PROXY}/yahoo?symbol=${encodeURIComponent(symbol)}`
+      : `${YAHOO_URL}${encodeURIComponent(symbol)}?range=1d&interval=5m&includePrePost=false`;
+  const res = await fetch(url);
+  if (!res.ok) return null;
+  const j = await res.json();
+  const r = j.chart?.result?.[0];
+  const m = r?.meta;
+  if (!m || m.regularMarketPrice == null) return null;
+  const prev = m.chartPreviousClose ?? m.previousClose;
+  const now = Date.now() / 1000;
+  const p = m.currentTradingPeriod?.regular;
+  const closes: number[] = (r.indicators?.quote?.[0]?.close ?? []).filter((v: number | null) => v != null);
+  return {
+    price: m.regularMarketPrice,
+    changePct: prev ? (m.regularMarketPrice / prev - 1) * 100 : null,
+    state: p ? (now >= p.start && now <= p.end ? 'OPEN' : 'CLOSE') : null,
+    t: m.regularMarketTime ?? now,
+    intraday: closes,
+    src: 'yahoo',
+  };
+}
+
+async function fetchYahoo(symbols: string[]): Promise<Record<string, LiveQuote>> {
+  const out: Record<string, LiveQuote> = {};
+  // 8개씩 동시에
+  for (let i = 0; i < symbols.length; i += 8) {
+    const part = symbols.slice(i, i + 8);
+    const got = await Promise.all(part.map((sym) => fetchYahooOne(sym).catch(() => null)));
+    got.forEach((q, k) => {
+      if (q) out[`US:${part[k]}`] = q;
+    });
+  }
+  return out;
+}
+
+export function useLiveQuotes(krCodes: string[], usCodes: string[]) {
   const [quotes, setQuotes] = useState<Record<string, LiveQuote>>({});
   const [at, setAt] = useState<number | null>(null);
   const [direct, setDirect] = useState(false);
@@ -92,35 +143,59 @@ export function useLiveQuotes(krCodes: string[]) {
     } catch {}
   }, [merge]);
 
-  const codesKey = krCodes.join(',');
-  const pullDirect = useCallback(async () => {
-    if (Platform.OS === 'web' || !codesKey) return;
+  const krKey = krCodes.join(',');
+  const usKey = usCodes.join(',');
+  const usOpen = useRef(true);
+
+  const pullKR = useCallback(async () => {
+    if (!canDirect || !krKey) return;
     try {
-      merge(await fetchNaver(codesKey.split(',')));
+      merge(await fetchNaver(krKey.split(',')));
       setDirect(true);
     } catch {
       setDirect(false);
     }
-  }, [codesKey, merge]);
+  }, [krKey, merge]);
+
+  const pullUS = useCallback(async () => {
+    if (!canDirect || !usKey) return;
+    try {
+      const got = await fetchYahoo(usKey.split(','));
+      if (Object.keys(got).length) {
+        usOpen.current = Object.values(got).some((q) => q.state === 'OPEN');
+        merge(got);
+        setDirect(true);
+      }
+    } catch {}
+  }, [usKey, merge]);
 
   useEffect(() => {
     pullFile();
-    pullDirect();
+    pullKR();
+    pullUS();
+    let usTick = 0;
     const a = setInterval(() => active.current && pullFile(), 60_000);
-    const b = setInterval(() => active.current && pullDirect(), 15_000);
+    const b = setInterval(() => active.current && pullKR(), KR_EVERY);
+    // 미국장이 닫혀 있으면 1분에 한 번만
+    const c = setInterval(() => {
+      usTick++;
+      if (active.current && (usOpen.current || usTick % 6 === 0)) pullUS();
+    }, US_EVERY);
     const sub = AppState.addEventListener('change', (st) => {
       active.current = st === 'active';
       if (active.current) {
         pullFile();
-        pullDirect();
+        pullKR();
+        pullUS();
       }
     });
     return () => {
       clearInterval(a);
       clearInterval(b);
+      clearInterval(c);
       sub.remove();
     };
-  }, [pullFile, pullDirect]);
+  }, [pullFile, pullKR, pullUS]);
 
   const open = {
     KR: Object.entries(quotes).some(([k, q]) => k.startsWith('KR:') && q.state === 'OPEN'),

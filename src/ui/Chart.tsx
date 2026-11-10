@@ -38,13 +38,13 @@ export function AreaChart({ data, height = 180 }: { data: number[]; height?: num
         <Svg width={w} height={height}>
           <Defs>
             <LinearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor={color} stopOpacity={0.16} />
+              <Stop offset="0" stopColor={color} stopOpacity={0.28} />
               <Stop offset="1" stopColor={color} stopOpacity={0} />
             </LinearGradient>
           </Defs>
           <Path d={g.area} fill="url(#fill)" />
           <Path d={g.line} stroke={color} strokeWidth={2.2} fill="none" strokeLinejoin="round" strokeLinecap="round" />
-          {last && <Circle cx={Math.min(last[0], w - 5)} cy={last[1]} r={4.5} fill={color} stroke="#fff" strokeWidth={2} />}
+          {last && <Circle cx={Math.min(last[0], w - 5)} cy={last[1]} r={4.5} fill={color} stroke={c.bg} strokeWidth={2} />}
         </Svg>
       )}
     </View>

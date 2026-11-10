@@ -97,7 +97,7 @@ export function Segmented<V extends string>({
 export function Chip({ label, on, onPress }: { label: string; on?: boolean; onPress?: () => void }) {
   return (
     <Pressable onPress={onPress} style={[s.chip, on && s.chipOn]} accessibilityRole="button" accessibilityState={{ selected: !!on }}>
-      <T size={14} w="semibold" color={on ? '#fff' : c.sub}>
+      <T size={14} w="semibold" color={on ? c.accentInk : c.sub}>
         {label}
       </T>
     </Pressable>
@@ -122,7 +122,7 @@ export function Logo({ name, code, size = 40 }: { name: string; code: string; si
     <View
       style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}
     >
-      <T size={size * 0.42} w="bold" color="#fff" style={{ lineHeight: size * 0.6 }}>
+      <T size={size * 0.42} w="bold" color={c.white} style={{ lineHeight: size * 0.6 }}>
         {letter}
       </T>
     </View>
@@ -138,12 +138,12 @@ export function Gap({ h = 12 }: { h?: number }) {
 }
 
 const s = StyleSheet.create({
-  card: { backgroundColor: c.card, borderRadius: 20 },
+  card: { backgroundColor: c.card, borderRadius: 22, borderWidth: 1, borderColor: c.line },
   secRow: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 14, gap: 12 },
-  seg: { flexDirection: 'row', backgroundColor: '#E9ECEF', borderRadius: 12, padding: 3 },
+  seg: { flexDirection: 'row', backgroundColor: c.card, borderRadius: 14, padding: 4, borderWidth: 1, borderColor: c.line },
   segItem: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 10 },
-  segOn: { backgroundColor: '#fff' },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: '#fff', borderWidth: 1, borderColor: c.line },
-  chipOn: { backgroundColor: c.text, borderColor: c.text },
+  segOn: { backgroundColor: c.raised },
+  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: c.card, borderWidth: 1, borderColor: c.line },
+  chipOn: { backgroundColor: c.accent, borderColor: c.accent },
   pill: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, alignSelf: 'flex-start' },
 });

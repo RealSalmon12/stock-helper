@@ -32,7 +32,7 @@ export default function App() {
     <SafeAreaProvider>
       <PrefsProvider>
         <DataProvider data={data} state={state} refresh={refresh}>
-          <StatusBar style="dark" />
+          <StatusBar style="light" />
           <View style={styles.outer}>
             <View style={styles.frame}>
               <Shell />
@@ -96,7 +96,7 @@ function Shell() {
 
   return (
     <NavContext.Provider value={nav}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: top ? c.card : c.bg }} edges={['top']}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['top']}>
         {ready && (
           <View style={{ flex: 1 }}>
             {/* 탭 화면은 계속 살려 둬서 스크롤 위치가 유지돼요 */}
@@ -127,10 +127,10 @@ function Shell() {
 function TabBar({ tab, onTab }: { tab: Tab; onTab: (t: Tab) => void }) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+    <View style={[styles.tabBar, { bottom: Math.max(insets.bottom, 12) }]}>
       {TABS.map((t) => {
         const on = tab === t.key;
-        const color = on ? c.text : '#B0B8C1';
+        const color = on ? c.accent : c.faint;
         return (
           <Pressable
             key={t.key}
@@ -178,7 +178,7 @@ function TermSheet({ term, onClose }: { term: TermKey | null; onClose: () => voi
                 {t.long}
               </T>
               <Tap onPress={onClose} style={styles.sheetBtn}>
-                <T size={16} w="bold" color="#fff">
+                <T size={16} w="bold" color={c.accentInk}>
                   알겠어요
                 </T>
               </Tap>
@@ -191,28 +191,30 @@ function TermSheet({ term, onClose }: { term: TermKey | null; onClose: () => voi
 }
 
 const styles = StyleSheet.create({
-  outer: { flex: 1, backgroundColor: '#E5E8EB', alignItems: 'center' },
+  outer: { flex: 1, backgroundColor: '#030405', alignItems: 'center' },
   frame: { flex: 1, width: '100%', maxWidth: 520, backgroundColor: c.bg, overflow: 'hidden' },
   tabBar: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
     flexDirection: 'row',
-    backgroundColor: c.card,
-    borderTopWidth: 1,
-    borderTopColor: c.line,
-    paddingTop: 8,
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
+    backgroundColor: 'rgba(24,29,38,0.96)',
+    borderWidth: 1,
+    borderColor: c.line,
+    paddingVertical: 10,
+    borderRadius: 26,
   },
   tabItem: { flex: 1, alignItems: 'center' },
   dim: { flex: 1, backgroundColor: c.dim, justifyContent: 'flex-end', alignItems: 'center' },
   sheet: {
     width: '100%',
     maxWidth: 520,
-    backgroundColor: c.card,
+    backgroundColor: c.raised,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
     paddingTop: 12,
   },
   grabber: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: c.line, marginBottom: 16 },
-  sheetBtn: { marginTop: 24, backgroundColor: c.blue, borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
+  sheetBtn: { marginTop: 24, backgroundColor: c.accent, borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
 });

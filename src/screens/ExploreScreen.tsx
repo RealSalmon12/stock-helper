@@ -71,7 +71,7 @@ export function ExploreScreen() {
     });
 
   return (
-    <ScrollView contentContainerStyle={{ paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={{ paddingBottom: 110 }} keyboardShouldPersistTaps="handled">
       <TopBar title="종목 찾기" />
       <MarketSwitch />
       <View style={{ padding: 16, gap: 12 }}>

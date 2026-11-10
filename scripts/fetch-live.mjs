@@ -122,13 +122,13 @@ await probeCors('yahoo chart', 'https://query1.finance.yahoo.com/v8/finance/char
 
 // 웹용 중계 서버(Cloudflare Worker)가 잘 동작하는지 확인
 const PROXY = 'https://stock-helper-proxy.xmfhfhfl.workers.dev';
-for (const path of ['/naver?codes=005930', '/yahoo?symbol=AAPL']) {
+for (const path of ['/', '/naver?codes=005930', '/yahoo?symbol=AAPL']) {
   try {
     const res = await fetch(PROXY + path, { headers: { Origin: 'https://realsalmon12.github.io' } });
     const text = await res.text();
     console.log(`[proxy] ${path}: HTTP ${res.status}, allow-origin=${res.headers.get('access-control-allow-origin')}, ${text.slice(0, 160)}`);
   } catch (e) {
-    console.log(`[proxy] ${path}: 실패 ${e.message}`);
+    console.log(`[proxy] ${path}: 실패 ${e.message} ${e.cause?.code ?? ''} ${e.cause?.message ?? ''}`);
   }
 }
 

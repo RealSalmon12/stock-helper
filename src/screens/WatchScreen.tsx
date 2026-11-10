@@ -26,7 +26,7 @@ export function WatchScreen() {
   ];
 
   return (
-    <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+    <ScrollView contentContainerStyle={{ paddingBottom: 110 }}>
       <TopBar title="관심 종목" />
       <View style={{ padding: 16, gap: 12 }}>
         {items.length === 0 ? (
@@ -42,9 +42,9 @@ export function WatchScreen() {
             </T>
             <Tap
               onPress={() => nav.setTab('explore')}
-              style={{ marginTop: 20, backgroundColor: c.blue, borderRadius: 14, paddingHorizontal: 20, paddingVertical: 12 }}
+              style={{ marginTop: 20, backgroundColor: c.accent, borderRadius: 14, paddingHorizontal: 20, paddingVertical: 12 }}
             >
-              <T size={15} w="bold" color="#fff">
+              <T size={15} w="bold" color={c.accentInk}>
                 종목 둘러보기
               </T>
             </Tap>

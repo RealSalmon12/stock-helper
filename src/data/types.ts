@@ -39,6 +39,44 @@ export interface StockMetrics {
   recommendation?: string | null;
 }
 
+/** 애널리스트 전망 (Yahoo Finance) */
+export interface Outlook {
+  targetMean?: number | null;
+  targetHigh?: number | null;
+  targetLow?: number | null;
+  analysts?: number | null;
+  recKey?: string | null;
+  /** 1(강력 매수) ~ 5(강력 매도) */
+  recMean?: number | null;
+  votes?: { strongBuy: number; buy: number; hold: number; sell: number; strongSell: number } | null;
+  epsGrowthThisYear?: number | null;
+  epsGrowthNextYear?: number | null;
+  revGrowthNextYear?: number | null;
+  changes?: { firm: string; action: string; from: string | null; to: string | null; t: number }[];
+}
+
+export interface NewsItem {
+  title: string;
+  source: string;
+  url: string;
+  t: number | null;
+  /** 이 종목을 직접 다룬 기사인지 (아니면 업종·시장 기사) */
+  rel?: boolean;
+  /** 제목의 낙관(1)/중립(0)/비관(-1) 단어 판정 */
+  tone: number;
+}
+
+/** 투자자 반응 */
+export interface Crowd {
+  source: string;
+  posts: number;
+  bull: number;
+  bear: number;
+  watchers?: number | null;
+  holders?: number;
+  method: string;
+}
+
 export interface Stock {
   code: string;
   name: string;
@@ -47,6 +85,9 @@ export interface Stock {
   currency: string;
   spark: number[];
   metrics: StockMetrics;
+  outlook?: Outlook | null;
+  news?: NewsItem[];
+  crowd?: Crowd | null;
 }
 
 export interface MarketData {

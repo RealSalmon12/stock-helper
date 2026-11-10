@@ -77,7 +77,7 @@ export function LearnScreen() {
   });
 
   return (
-    <ScrollView contentContainerStyle={{ paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={{ paddingBottom: 110 }} keyboardShouldPersistTaps="handled">
       <TopBar title="주식 공부" />
       <View style={{ padding: 16, gap: 12 }}>
         <Tap onPress={() => nav.push({ name: 'test' })}>

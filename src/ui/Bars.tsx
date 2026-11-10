@@ -38,7 +38,7 @@ export function MarketSwitch() {
 /** 상세 화면 맨 위: 뒤로가기 + 제목 + 오른쪽 */
 export function BackBar({ title, onBack, right }: { title?: string; onBack: () => void; right?: ReactNode }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', height: 52, paddingHorizontal: 8, backgroundColor: c.card }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', height: 52, paddingHorizontal: 8, backgroundColor: c.bg }}>
       <Tap onPress={onBack} hitSlop={10} style={{ padding: 8 }} accessibilityLabel="뒤로 가기">
         <Icon name="back" />
       </Tap>
@@ -56,14 +56,14 @@ export function LevelToggle() {
   return (
     <Tap
       onPress={() => set({ level: level === 'easy' ? 'pro' : 'easy' })}
-      style={{ flexDirection: 'row', backgroundColor: '#E9ECEF', borderRadius: 999, padding: 3 }}
+      style={{ flexDirection: 'row', backgroundColor: c.card, borderRadius: 999, padding: 3, borderWidth: 1, borderColor: c.line }}
       accessibilityRole="switch"
       accessibilityLabel="초보/고수 보기 전환"
     >
       {(['easy', 'pro'] as const).map((l) => (
         <View
           key={l}
-          style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: level === l ? '#fff' : 'transparent' }}
+          style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: level === l ? c.raised : 'transparent' }}
         >
           <T size={13} w={level === l ? 'bold' : 'semibold'} color={level === l ? c.text : c.faint}>
             {l === 'easy' ? '쉽게' : '자세히'}

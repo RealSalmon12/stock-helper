@@ -1,5 +1,6 @@
 import { Market, Stock } from '../data/types';
 import { clamp, FactorKey, ok, Rated, rateMarket } from './factors';
+import { buyShare, targetUpside, voteTotal } from './outlook';
 
 /**
  * 추천 목록
@@ -8,7 +9,7 @@ import { clamp, FactorKey, ok, Rated, rateMarket } from './factors';
  * 투자 조언이 아니라, "이런 기준으로 보면 이 종목들이 위에 있어요"라는 참고용 정리예요.
  */
 
-export type CollectionId = 'buy' | 'stable' | 'student' | 'dividend' | 'growth' | 'value';
+export type CollectionId = 'buy' | 'expert' | 'stable' | 'student' | 'dividend' | 'growth' | 'value';
 
 export interface Collection {
   id: CollectionId;
@@ -40,6 +41,21 @@ export const COLLECTIONS: Collection[] = [
       if (!m.aboveMa200 && ok(m.ret6m) && m.ret6m < -15) v -= 8;
       return v;
     },
+  },
+  {
+    id: 'expert',
+    emoji: '🎯',
+    title: '전문가가 주목하는',
+    desc: '증권사 애널리스트들의 매수 의견이 많고 목표가 여유가 큰 종목',
+    how: '매수 의견 비율 50% · 평균 목표가까지 남은 여유 35% · 의견을 낸 애널리스트 수 15%. 의견이 5명 미만이면 빼요. 애널리스트 전망은 자주 틀리고 대체로 낙관적이에요.',
+    focus: ['value', 'earn'],
+    score: ({ stock }) => {
+      const share = buyShare(stock.outlook) ?? 50;
+      const up = targetUpside(stock) ?? 0;
+      const n = voteTotal(stock.outlook) || stock.outlook?.analysts || 0;
+      return share * 0.5 + Math.max(0, Math.min(100, 50 + up * 1.5)) * 0.35 + Math.min(100, n * 3) * 0.15;
+    },
+    exclude: ({ stock }) => (voteTotal(stock.outlook) || stock.outlook?.analysts || 0) < 5,
   },
   {
     id: 'stable',

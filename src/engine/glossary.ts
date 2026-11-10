@@ -1,4 +1,20 @@
-import { TermKey } from '../data/types';
+export type TermKey =
+  | 'per'
+  | 'pbr'
+  | 'peg'
+  | 'roe'
+  | 'div'
+  | 'payout'
+  | 'vol'
+  | 'beta'
+  | 'mdd'
+  | 'ma'
+  | 'rsi'
+  | 'debt'
+  | 'momentum'
+  | 'target'
+  | 'margin'
+  | 'growth';
 
 export interface Term {
   name: string;

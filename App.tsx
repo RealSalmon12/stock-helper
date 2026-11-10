@@ -5,6 +5,7 @@ import { BackHandler, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PrefsProvider, usePrefs } from './src/data/prefs';
 import { useMarketData } from './src/data/useMarketData';
+import { applyLive, useLiveQuotes } from './src/data/useLiveQuotes';
 import { GLOSSARY, TermKey } from './src/engine/glossary';
 import { DataProvider, Nav, NavContext, Route, Tab } from './src/nav/context';
 import { CollectionScreen } from './src/screens/CollectionScreen';
@@ -24,14 +25,17 @@ export default function App() {
     'Pretendard-SemiBold': require('./assets/fonts/Pretendard-SemiBold.otf'),
     'Pretendard-Bold': require('./assets/fonts/Pretendard-Bold.otf'),
   });
-  const { data, state, refresh } = useMarketData();
+  const { data: saved, state, refresh } = useMarketData();
+  const krCodes = useMemo(() => saved.stocks.filter((s) => s.market === 'KR').map((s) => s.code), [saved]);
+  const { quotes, info: live } = useLiveQuotes(krCodes);
+  const data = useMemo(() => applyLive(saved, quotes), [saved, quotes]);
 
   if (!fontsLoaded && !fontError) return <View style={{ flex: 1, backgroundColor: c.bg }} />;
 
   return (
     <SafeAreaProvider>
       <PrefsProvider>
-        <DataProvider data={data} state={state} refresh={refresh}>
+        <DataProvider data={data} state={state} refresh={refresh} live={live}>
           <StatusBar style="light" />
           <View style={styles.outer}>
             <View style={styles.frame}>

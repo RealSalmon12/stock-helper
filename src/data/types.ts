@@ -88,6 +88,8 @@ export interface Stock {
   outlook?: Outlook | null;
   news?: NewsItem[];
   crowd?: Crowd | null;
+  /** 장중 현재가를 받았을 때만 있음 */
+  live?: { state: string | null; t: number | null; intraday: number[] };
 }
 
 export interface MarketData {

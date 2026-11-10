@@ -13,6 +13,7 @@ import { Spark } from '../ui/Chart';
 import { Disclaimer } from '../ui/Disclaimer';
 import { ScoreRing, StackBar } from '../ui/Gauges';
 import { Icon } from '../ui/Icon';
+import { LiveBadge } from '../ui/LiveBadge';
 import { Card, Chip, Divider, Segmented, T, Tap } from '../ui/kit';
 import { NewsList } from '../ui/NewsList';
 import { StockRow } from '../ui/StockRow';
@@ -20,7 +21,7 @@ import { c, changeColor } from '../ui/theme';
 
 export function HomeScreen() {
   const { market, investor } = usePrefs();
-  const { boards, data, state, refresh } = useData();
+  const { boards, data, state, refresh, live } = useData();
   const nav = useNav();
   const board = boards[market];
   const [col, setCol] = useState<CollectionId>('expert');
@@ -56,6 +57,7 @@ export function HomeScreen() {
     .slice(0, 6);
 
   const mine = investor ? INVESTOR[investor] : null;
+  const liveT = board.rated.reduce((mx, r) => Math.max(mx, r.stock.live?.t ?? 0), 0) || null;
   const curCol = collectionById(col);
   const today = new Date(data.generatedAt);
 
@@ -73,7 +75,7 @@ export function HomeScreen() {
             주식 도우미
           </T>
           <T size={12} color={c.faint} style={{ lineHeight: 16 }}>
-            {today.getMonth() + 1}월 {today.getDate()}일 장 마감 기준
+            {today.getMonth() + 1}월 {today.getDate()}일 분석 기준
           </T>
         </View>
         <LevelToggle />
@@ -112,16 +114,19 @@ export function HomeScreen() {
               </T>
             </View>
           </View>
-          <Tap
-            onPress={refresh}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 12 }}
-            accessibilityLabel="새로고침"
-          >
-            <T size={12} color={c.faint}>
-              {fmtDate(data.generatedAt)} 업데이트 · {state === 'loading' ? '불러오는 중…' : state === 'offline' ? '저장된 데이터' : '최신'}
-            </T>
-            <Icon name="refresh" size={14} color={c.faint} />
-          </Tap>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
+            <LiveBadge
+              open={live.open[market]}
+              t={liveT ? liveT * 1000 : null}
+              label={live.open[market] ? '실시간 반영 중' : liveT ? '장 마감 · 마지막 가격' : '장 마감'}
+            />
+            <Tap onPress={refresh} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }} accessibilityLabel="새로고침">
+              <T size={12} color={c.faint}>
+                분석 {fmtDate(data.generatedAt)} · {state === 'loading' ? '불러오는 중…' : state === 'offline' ? '저장된 데이터' : '최신'}
+              </T>
+              <Icon name="refresh" size={14} color={c.faint} />
+            </Tap>
+          </View>
         </Card>
 
         {/* 오늘의 추천 캐러셀 */}

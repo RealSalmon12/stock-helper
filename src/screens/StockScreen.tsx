@@ -14,12 +14,13 @@ import { Disclaimer } from '../ui/Disclaimer';
 import { Radar, ScoreRing, StackBar, TargetRange } from '../ui/Gauges';
 import { Icon } from '../ui/Icon';
 import { Card, Divider, Logo, Pill, Segmented, T, Tap } from '../ui/kit';
+import { LiveBadge } from '../ui/LiveBadge';
 import { NewsList } from '../ui/NewsList';
 import { c, changeColor, toneColor } from '../ui/theme';
 
-type Period = '3m' | '6m' | '1y';
+type Period = '1d' | '3m' | '6m' | '1y';
 type Section = 'summary' | 'outlook' | 'crowd' | 'stats';
-const PERIOD_POINTS: Record<Period, number> = { '3m': 14, '6m': 27, '1y': 999 };
+const PERIOD_POINTS: Record<Period, number> = { '1d': 0, '3m': 14, '6m': 27, '1y': 999 };
 
 export function StockScreen({ market, code }: { market: Market; code: string }) {
   const nav = useNav();
@@ -45,8 +46,9 @@ export function StockScreen({ market, code }: { market: Market; code: string }) 
   const m = s.metrics;
   const pro = level === 'pro';
   const watched = isWatched(market, code);
-  const chart = s.spark.slice(-PERIOD_POINTS[period]);
-  const periodRet = chart.length > 1 ? (chart[chart.length - 1] / chart[0] - 1) * 100 : null;
+  const intraday = s.live?.intraday ?? [];
+  const chart = period === '1d' ? intraday : s.spark.slice(-PERIOD_POINTS[period]);
+  const periodRet = period === '1d' ? m.change1d : chart.length > 1 ? (chart[chart.length - 1] / chart[0] - 1) * 100 : null;
 
   return (
     <View style={{ flex: 1 }}>
@@ -93,6 +95,11 @@ export function StockScreen({ market, code }: { market: Market; code: string }) 
               </T>
             </View>
           </View>
+          {s.live && (
+            <View style={{ marginTop: 10 }}>
+              <LiveBadge open={s.live.state === 'OPEN'} t={s.live.t ? s.live.t * 1000 : null} />
+            </View>
+          )}
           <View style={{ marginTop: 16 }}>
             <AreaChart data={chart} height={170} />
           </View>
@@ -101,6 +108,7 @@ export function StockScreen({ market, code }: { market: Market; code: string }) 
               value={period}
               onChange={setPeriod}
               options={[
+                ...(intraday.length > 1 ? [{ value: '1d' as Period, label: '오늘' }] : []),
                 { value: '3m', label: '3개월' },
                 { value: '6m', label: '6개월' },
                 { value: '1y', label: '1년' },

@@ -15,7 +15,7 @@ const LIVE_URL = 'https://raw.githubusercontent.com/RealSalmon12/stock-helper/li
 const NAVER_URL = 'https://polling.finance.naver.com/api/realtime/domestic/stock/';
 const YAHOO_URL = 'https://query1.finance.yahoo.com/v8/finance/chart/';
 /** 예: 'https://stock-helper-proxy.내이름.workers.dev' (끝에 / 없이) */
-export const LIVE_PROXY = '';
+export const LIVE_PROXY = 'https://stock-helper-proxy.xmfhfhfl.workers.dev';
 
 const KR_EVERY = 5_000;
 const US_EVERY = 10_000;

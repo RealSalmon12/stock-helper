@@ -7,6 +7,7 @@
 
 import { writeFile, mkdir } from 'node:fs/promises';
 import { KR, US } from './universe.mjs';
+import { fetchCrowd, fetchNews, fetchOutlook } from './fetch-extra.mjs';
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
@@ -294,6 +295,16 @@ async function collect(list, market) {
           console.warn(`[${s.code}] 네이버 보충 실패: ${e.message}`);
         }
       }
+      // 전망·뉴스·투자자 반응 (실패해도 계속)
+      let outlook = null;
+      try {
+        outlook = await fetchOutlook(s.yahoo, await yahooAuth());
+      } catch (e) {
+        console.warn(`[${s.code}] 전망 실패: ${e.message}`);
+      }
+      const news = await fetchNews(market, s.code, s.yahoo);
+      const crowd = await fetchCrowd(market, s.code, s.yahoo);
+
       const beta = calcBeta(chart.points, indexPoints);
       if (beta != null) f.beta = beta;
       const { spark, ...rest } = pm;
@@ -305,8 +316,13 @@ async function collect(list, market) {
         currency: chart.meta?.currency ?? (market === 'KR' ? 'KRW' : 'USD'),
         spark,
         metrics: roundAll({ ...rest, ...f }),
+        outlook,
+        news,
+        crowd,
       });
-      console.log(`[${s.code}] ${s.name} OK (PER ${f.per ?? '-'}, 배당 ${f.divYield ?? '-'}, 베타 ${beta?.toFixed(2) ?? '-'})`);
+      console.log(
+        `[${s.code}] ${s.name} OK (PER ${f.per ?? '-'}, 의견 ${outlook?.analysts ?? 0}명, 뉴스 ${news.length}, 반응 ${crowd ? `${crowd.bull}/${crowd.bear}/${crowd.posts}` : '-'})`,
+      );
     } catch (e) {
       console.warn(`[${s.code}] ${s.name} 건너뜀: ${e.message}`);
     }
@@ -328,7 +344,7 @@ await writeFile(
   JSON.stringify(
     {
       generatedAt: new Date().toISOString(),
-      sources: ['Yahoo Finance', '네이버 증권'],
+      sources: ['Yahoo Finance', '네이버 증권', 'StockTwits'],
       stocks: [...kr, ...us],
     },
     null,

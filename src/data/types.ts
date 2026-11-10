@@ -1,9 +1,5 @@
 export type Market = 'KR' | 'US';
 
-export type RecommendationKind = 'buyNow' | 'stable' | 'student';
-
-export type Mode = 'beginner' | 'expert';
-
 /** 수집 스크립트(scripts/fetch-data.mjs)가 만드는 지표. 값이 없으면 null/undefined. 퍼센트 값은 % 단위. */
 export interface StockMetrics {
   price: number;
@@ -57,56 +53,4 @@ export interface MarketData {
   generatedAt: string;
   sources: string[];
   stocks: Stock[];
-}
-
-export type Tone = 'good' | 'warn' | 'info';
-
-export interface Reason {
-  tone: Tone;
-  /** 짧은 제목 (예: "오르는 흐름") */
-  title: string;
-  /** 초보용 쉬운 문장 */
-  easy: string;
-  /** 고수용 숫자 포함 문장 */
-  detail: string;
-  /** 관련 용어 (용어 사전 키) */
-  term?: TermKey;
-  /** 정렬용 강도 */
-  weight: number;
-}
-
-export type TermKey =
-  | 'per'
-  | 'pbr'
-  | 'peg'
-  | 'roe'
-  | 'div'
-  | 'payout'
-  | 'vol'
-  | 'beta'
-  | 'mdd'
-  | 'ma'
-  | 'rsi'
-  | 'debt'
-  | 'momentum'
-  | 'target'
-  | 'margin'
-  | 'growth';
-
-export interface SubScore {
-  key: string;
-  label: string;
-  score: number; // 0~100
-  weight: number; // 0~1
-}
-
-export interface Scored {
-  stock: Stock;
-  kind: RecommendationKind;
-  score: number; // 0~100
-  subs: SubScore[];
-  reasons: Reason[];
-  summary: string;
-  /** 데이터가 얼마나 갖춰져 있는지 0~1 */
-  coverage: number;
 }
